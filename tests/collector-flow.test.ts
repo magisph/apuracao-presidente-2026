@@ -10,7 +10,7 @@ const exec=promisify(execFile);
 const collector=new URL("../scripts/collect.ts",import.meta.url).href;
 const http=new URL("../src/collector/http.ts",import.meta.url).href;
 const fixture=JSON.parse(await readFile(new URL("./fixtures/ea20-2026-2t-before.json",import.meta.url),"utf8"));
-async function run(dir:string,shard:string,fail=false) {
+async function run(dir:string,shard:string,fail=false,snapshotStatus=201) {
   const script=`
     import fs from 'node:fs/promises';
     import {ReliableClient} from ${JSON.stringify(http)};
@@ -33,7 +33,10 @@ async function run(dir:string,shard:string,fail=false) {
         return Response.json({id:body.id},{status:201});
       }
       if(url.endsWith('/ingest/territories')) return Response.json({hash:'fixture-hash'});
-      if(url.endsWith('/ingest/snapshot')) { await fs.writeFile('published.json',JSON.stringify(body.snapshot)); return Response.json({}, {status:201}); }
+      if(url.endsWith('/ingest/snapshot')) {
+        if(${snapshotStatus}!==201) return Response.json({error:'fixture'},{status:${snapshotStatus}});
+        await fs.writeFile('published.json',JSON.stringify(body.snapshot)); return Response.json({}, {status:201});
+      }
       if(url.endsWith('/ingest/heartbeat')) return Response.json({ok:true});
       throw Error('unexpected URL '+url);
     };
@@ -74,5 +77,25 @@ test("actual coordinator publishes declared source failures despite recent heart
     assert.equal(beat.groups.g0.state,"stale");
     assert.equal(s.health.groups.g0.state,"stale");
     assert.equal(s.health.state,"stale");
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
+const coordinatorBase=async(dir:string)=>{
+  await mkdir(join(dir,"data"));
+  const id="ac/01066/0001/0001";
+  await writeFile(join(dir,"data/base.json"),JSON.stringify({sections:[{id,uf:"AC",region:"Norte",municipality:"01066",name:"Test",capital:false,electorate:300,firstA:100,firstB:100,firstOther:40,firstValid:240,members:[id],matched:true}],manifest:{complete:true}}));
+};
+test("coordinator survives a transient snapshot failure",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"vertice-transient-flow-"));
+  try {
+    await coordinatorBase(dir);
+    await run(dir,"coordinator",false,503);
+    await assert.rejects(readFile(join(dir,"published.json"),"utf8"),/ENOENT/);
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
+test("coordinator stops on fenced publication",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"vertice-fenced-flow-"));
+  try {
+    await coordinatorBase(dir);
+    await assert.rejects(run(dir,"coordinator",false,409));
   } finally { await rm(dir,{recursive:true,force:true}); }
 });

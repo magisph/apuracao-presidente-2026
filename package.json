@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "collect": "node --experimental-strip-types scripts/collect.ts",
+    "collect:supervised": "node --experimental-strip-types scripts/supervise.ts",
     "collect:local": "node --experimental-strip-types scripts/run-local.ts",
     "import:base": "node --experimental-strip-types scripts/import-base.ts",
     "prepare:base": "node --experimental-strip-types scripts/prepare-base.ts",

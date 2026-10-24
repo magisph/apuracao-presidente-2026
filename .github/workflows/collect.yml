@@ -41,7 +41,7 @@ jobs:
           gzip -dc data/base.download > data/base.json
           printf '%s  data/base.json\n' "$BASE_SHA256" | sha256sum --check
       - name: Coletar e persistir
-        run: npm run collect
+        run: npm run collect:supervised
         env:
           COLLECTOR_SHARD: ${{ matrix.shard }}
           COLLECTOR_MINUTES: ${{ inputs.duration_minutes || '345' }}

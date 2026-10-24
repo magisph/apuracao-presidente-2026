@@ -19,6 +19,7 @@ import { readEvents } from "../src/collector/events.ts";
 import { gzipText, gunzipText } from "../src/core/codec.ts";
 import { partitionUFs } from "../src/collector/partition.ts";
 import { publishMunicipalPages } from "../src/collector/publication.ts";
+import { isFatalCollectionError } from "../src/collector/failure.ts";
 import { DurableOutbox } from "../src/collector/outbox.ts";
 import { collectionHealth } from "../src/collector/health.ts";
 import { projectHierarchy } from "../src/core/model.ts";
@@ -246,7 +247,8 @@ let lastCheckpoint = 0;
 const errors = new Set<string>();
 let scannedAt = 0,
   lastBatch = 0;
-let running = true;
+let running = true,
+  transientFailures = 0;
 process.on("SIGINT", () => {
   running = false;
 });
@@ -588,18 +590,25 @@ do {
       });
       lastCheckpoint = Date.now();
     }
+    transientFailures = 0;
   } catch (e) {
     console.error(String(e));
-    if (String(e).includes("ingestion") || String(e).includes("hash mismatch"))
-      throw e;
+    // Fencing and corrupted state stop the process; Worker 5xx/429 and network failures back off.
+    if (isFatalCollectionError(e)) throw e;
+    transientFailures++;
   }
   if (!once && running)
     await new Promise((r) =>
       setTimeout(
         r,
-        shard === "coordinator"
-          ? Math.max(250, 15000 - (Date.now() - loopStarted))
-          : 250,
+        Math.max(
+          shard === "coordinator"
+            ? Math.max(250, 15000 - (Date.now() - loopStarted))
+            : 250,
+          transientFailures
+            ? Math.min(60000, 1000 * 2 ** Math.min(transientFailures, 6))
+            : 0,
+        ),
       ),
     );
 } while (!once && running && Date.now() < stopAt);
