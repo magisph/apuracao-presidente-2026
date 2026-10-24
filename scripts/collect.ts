@@ -113,7 +113,8 @@ const post = async (path: string, body: unknown) => {
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(30000),
   });
-  if (!r.ok) throw Error(`ingestion ${path}: ${r.status}`);
+  if (!r.ok)
+    throw Error(`ingestion ${path}: ${r.status} ${(await r.text().catch(() => "")).slice(0, 200)}`);
   return r.json() as Promise<any>;
 };
 const outbox = endpoint && shard !== "coordinator"

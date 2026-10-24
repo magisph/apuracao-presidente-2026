@@ -314,7 +314,7 @@ Executado conforme plano aprovado pelo usuário, no branch `pendencias-eleicao-2
 ### Correções no fluxo produtivo
 
 - **Publicação municipal concorrente** (`src/collector/publication.ts`): até 4 páginas em voo, manifesto na ordem das UFs e hashes por índice de página; na primeira falha, nenhuma página nova é despachada e o snapshot não é enviado. O Worker não mudou: o caminho endereçado por conteúdo já era idempotente.
-- **Resiliência** (`src/collector/failure.ts`, `scripts/supervise.ts`): antes, qualquer resposta não 2xx do Worker encerrava o shard até o fim do ciclo (até 6 h). Agora 5xx, 429 e falhas de rede recuam com backoff (até 60 s); 4xx, cercamento de lease e divergência de base continuam fatais. O supervisor reinicia o coletor encerrado com erro, em 30 s, com o tempo restante do ciclo.
+- **Resiliência** (`src/collector/failure.ts`, `scripts/supervise.ts`): antes, qualquer resposta não 2xx do Worker encerrava o shard até o fim do ciclo (até 6 h). Agora 5xx, 429, 400 `request rejected` (exceção interna do Worker, inclusive D1) e falhas de rede recuam com backoff (até 60 s); 4xx, cercamento de lease e divergência de base continuam fatais. O supervisor reinicia o coletor encerrado com erro, em 30 s, com o tempo restante do ciclo.
 - **Transporte compartilhado** (`fetchAuxiliary`/`downloadBU` em `src/collector/tse.ts`), usado pela coleta e pelo teste real; a política de `collectSection` permaneceu igual.
 
 ### Evidências

@@ -10,11 +10,13 @@ const exec=promisify(execFile);
 const collector=new URL("../scripts/collect.ts",import.meta.url).href;
 const http=new URL("../src/collector/http.ts",import.meta.url).href;
 const fixture=JSON.parse(await readFile(new URL("./fixtures/ea20-2026-2t-before.json",import.meta.url),"utf8"));
-async function run(dir:string,shard:string,fail=false,snapshotStatus=201) {
+async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once?:boolean;snapshotFailures?:number;snapshotError?:string;minutes?:string}={}) {
+  const once=o.once??true, failures=o.snapshotFailures??1e9;
   const script=`
     import fs from 'node:fs/promises';
     import {ReliableClient} from ${JSON.stringify(http)};
-    process.argv=[process.execPath,'collect.ts','--once'];
+    process.argv=[process.execPath,'collect.ts',...(${once} ? ['--once'] : [])];
+    let snapshotAttempts=0;
     ReliableClient.prototype.official=async function(url) {
       if(url.includes('ele-c.json')) return {pl:[{c:'ele2026',cd:'3221',dt:'25/10/2026',e:[{cd:'6258',t:'2',abr:[{cp:[{cd:'1'}]}]}]}]};
       if(url.includes('-cs.json')) return {cdp:'3221',abr:[]};
@@ -34,7 +36,7 @@ async function run(dir:string,shard:string,fail=false,snapshotStatus=201) {
       }
       if(url.endsWith('/ingest/territories')) return Response.json({hash:'fixture-hash'});
       if(url.endsWith('/ingest/snapshot')) {
-        if(${snapshotStatus}!==201) return Response.json({error:'fixture'},{status:${snapshotStatus}});
+        if(${snapshotStatus}!==201 && snapshotAttempts++ < ${failures}) return Response.json({error:${JSON.stringify(o.snapshotError??'fixture')}},{status:${snapshotStatus}});
         await fs.writeFile('published.json',JSON.stringify(body.snapshot)); return Response.json({}, {status:201});
       }
       if(url.endsWith('/ingest/heartbeat')) return Response.json({ok:true});
@@ -43,7 +45,7 @@ async function run(dir:string,shard:string,fail=false,snapshotStatus=201) {
     await import(${JSON.stringify(collector)});
   `;
   await exec(process.execPath,["--experimental-strip-types","--input-type=module","-e",script],{
-    cwd:dir,env:{...process.env,COLLECTOR_SHARD:shard,INGEST_URL:"https://fixture.test",INGEST_TOKEN:"test-only-secret-12345678901234567890"},timeout:20000,windowsHide:true,
+    cwd:dir,env:{...process.env,COLLECTOR_SHARD:shard,INGEST_URL:"https://fixture.test",INGEST_TOKEN:"test-only-secret-12345678901234567890",...(o.minutes ? {COLLECTOR_MINUTES:o.minutes,PUBLISH_INTERVAL_MS:"1000"} : {})},timeout:once ? 20000 : 60000,windowsHide:true,
   });
 }
 test("actual collector retries a durable batch after transport failure and process restart",async()=>{
@@ -97,5 +99,22 @@ test("coordinator stops on fenced publication",async()=>{
   try {
     await coordinatorBase(dir);
     await assert.rejects(run(dir,"coordinator",false,409));
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
+test("coordinator survives a D1 failure surfaced by the Worker as request rejected",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"vertice-d1-flow-"));
+  try {
+    await coordinatorBase(dir);
+    await run(dir,"coordinator",false,400,{snapshotError:"request rejected"});
+    await assert.rejects(readFile(join(dir,"published.json"),"utf8"),/ENOENT/);
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
+test("coordinator republishes on a later loop after a transient snapshot failure",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"vertice-republish-flow-"));
+  try {
+    await coordinatorBase(dir);
+    await run(dir,"coordinator",false,503,{once:false,snapshotFailures:1,minutes:"0.4"});
+    const s=JSON.parse(await readFile(join(dir,"published.json"),"utf8"));
+    assert.ok(s.sequence>=2,`sequence=${s.sequence}`);
   } finally { await rm(dir,{recursive:true,force:true}); }
 });

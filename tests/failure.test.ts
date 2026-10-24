@@ -9,10 +9,12 @@ import { isFatalCollectionError } from "../src/collector/failure.ts";
 const supervisor = new URL("../scripts/supervise.ts", import.meta.url);
 test("classifies ingestion failures", () => {
   for (const e of [Error("ingestion /ingest/heartbeat: 503"), Error("ingestion /ingest/snapshot: 500"),
-    Error("ingestion /ingest/territories: 429"), new TypeError("fetch failed"), Error("collection deadline reached")])
+    Error("ingestion /ingest/territories: 429"), new TypeError("fetch failed"), Error("collection deadline reached"),
+    Error('ingestion /ingest/heartbeat: 400 {"error":"request rejected"}')])
     assert.equal(isFatalCollectionError(e), false, String(e));
   for (const e of [Error("ingestion /ingest/heartbeat: 409"), Error("ingestion /ingest/snapshot: 400"),
-    Error("ingestion /ingest/lease: 401"), Error("remote base hash mismatch"), Error("ingestion outbox persistence: EACCES")])
+    Error("ingestion /ingest/lease: 401"), Error("remote base hash mismatch"), Error("ingestion outbox persistence: EACCES"),
+    Error('ingestion /ingest/territories: 400 {"error":"invalid territorial page"}'), Error("ingestion /ingest/snapshot: 400")])
     assert.equal(isFatalCollectionError(e), true, String(e));
 });
 async function supervise(child: string, env: Record<string, string>) {
