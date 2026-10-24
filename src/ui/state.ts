@@ -1,3 +1,4 @@
+import type { Projection } from '../core/types.ts';
 export class LoadGeneration {
   value = 0;
   begin() {
@@ -12,4 +13,9 @@ export function projectionDisplay(available: boolean, progress: number, mode: "l
   if (!available) return "hidden";
   if (mode === "simulation") return "shown";
   return progress < 0.01 ? "hidden" : progress < 0.025 ? "unreliable" : "shown";
+}
+export function displayProjection(p:Projection,mode:'live'|'simulation'):Projection {
+  if(projectionDisplay(p.available,p.progress,mode)!=='hidden') return p;
+  return {...p,available:false,a:null,b:null,share:null,low:null,high:null,
+    diagnostics:{...p.diagnostics,transfer:null,swing:null,proportional:null}};
 }

@@ -107,3 +107,14 @@ test("projection is hidden below 1% observed and flagged as unreliable until 2.5
   assert.equal(projectionDisplay(true, 0.025), "shown");
   assert.equal(projectionDisplay(true, 0.005, "simulation"), "shown");
 });
+
+test('display projection strips hidden estimates for graph, maps and territory consumers without changing the source',async()=>{
+  const state=await import('../src/ui/state.ts');
+  assert.equal(typeof (state as any).displayProjection,'function');
+  const {makeDemo}=await import('../src/core/demo.ts');
+  const p={...makeDemo(1)[0].projection,available:true,progress:.009,a:51,b:49,share:.51,low:.48,high:.54};
+  const hidden=(state as any).displayProjection(p,'live');
+  assert.equal(hidden.available,false);
+  assert.deepEqual([hidden.a,hidden.b,hidden.share,hidden.low,hidden.high],[null,null,null,null,null]);
+  assert.equal(p.share,.51);assert.equal((state as any).displayProjection(p,'simulation').share,.51);
+});

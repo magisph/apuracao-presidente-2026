@@ -2,7 +2,7 @@ import "./style.css";
 import { makeDemo } from "../core/demo.ts";
 import type { Snapshot, Projection, Territory } from "../core/types.ts";
 import { validateSnapshot } from "../core/validation.ts";
-import { LoadGeneration, projectionDisplay } from "./state.ts";
+import { LoadGeneration, projectionDisplay, displayProjection } from "./state.ts";
 import { project } from "../core/model.ts";
 import { mathematicalDecision } from "../core/decision.ts";
 import { gunzipText } from "../core/codec.ts";
@@ -97,7 +97,7 @@ const chosen = () => (index < 0 ? history.at(-1) : history[index]);
 function scoped(s: Snapshot): { p: Projection; t: Territory | undefined } {
   const t = s.territories.find((t) => t.code === scope);
   return {
-    p: t?.projection ?? (scope === "BR" ? s.projection : unavailable),
+    p: displayProjection(t?.projection ?? (scope === "BR" ? s.projection : unavailable),s.mode),
     t,
   };
 }
@@ -209,7 +209,7 @@ function render() {
   $("return-live").textContent =
     s.mode === "simulation" ? "Ir ao fim do ensaio" : "Voltar ao vivo";
   $("metrics").innerHTML =
-    `<article class="panel metric"><h3>Base histórica de referência</h3><div class="row"><span class="value">${num(p.modeledSections)} <small style="font-size:11px">unidades</small></span><span class="mini-label">${missingSections === null ? "Histórico correspondente" : `${num(missingSections)} sem histórico`}</span></div><p>Eleitorado de referência ${pct(p.coverage, 2)} (provisório). Unidades sem correspondência ficam fora do modelo.</p></article><article class="panel metric"><h3>Fonte oficial, coleta independente</h3><div class="row"><span class="value">${num(official?.countedSections)} <small style="font-size:12px">/ ${num(official?.totalSections)}</small></span><span class="mini-label">EA20</span></div><p>O total do TSE e os BUs coletados mantêm seus próprios relógios e denominadores.${s.health.estimatedSections ? ` ${num(s.health.estimatedSections)} seções estimadas a partir de parciais municipais, substituídas pelo BU quando publicado.` : ""}</p></article><article class="panel metric"><h3>Qualidade da projeção</h3><div class="row"><span class="value" style="font-size:18px;color:#e6bd78">Em validação</span><span class="mini-label">Método v2</span></div><p>Sem probabilidade de vitória. Selo de vencedor bloqueado até calibração e testes independentes.</p></article>`;
+    `<article class="panel metric"><h3>Base histórica de referência</h3><div class="row"><span class="value">${num(p.modeledSections)} <small style="font-size:11px">unidades</small></span><span class="mini-label">${missingSections === null ? "Histórico correspondente" : `${num(missingSections)} sem histórico`}</span></div><p>Eleitorado de referência ${pct(p.coverage, 2)} (provisório). Unidades sem correspondência ficam fora do modelo.</p></article><article class="panel metric"><h3>Fonte oficial, coleta independente</h3><div class="row"><span class="value">${num(official?.countedSections)} <small style="font-size:12px">/ ${num(official?.totalSections)}</small></span><span class="mini-label">EA20</span></div><p>O total oficial e as observações coletadas mantêm seus próprios relógios e denominadores.${s.health.estimatedSections ? ` ${num(s.health.estimatedSections)} seções estimadas a partir de parciais municipais, substituídas pelo BU quando publicado.` : ""}</p></article><article class="panel metric"><h3>Qualidade da projeção</h3><div class="row"><span class="value" style="font-size:18px;color:#e6bd78">Em validação</span><span class="mini-label">Método v2</span></div><p>Sem probabilidade de vitória. Selo de vencedor bloqueado até calibração e testes independentes.</p></article>`;
   renderDetails(
     index < 0 && latestHealth
       ? { ...s, health: { ...s.health, ...latestHealth } }
@@ -314,7 +314,7 @@ function renderTerritories(s: Snapshot) {
   $("territories").innerHTML =
     rows
       .map((t) => {
-        const p = t.projection,
+        const p = displayProjection(t.projection,s.mode),
           share =
             mapMode === "official"
               ? t.official?.valid
@@ -382,7 +382,7 @@ function renderMap(s: Snapshot) {
         ? t.official?.valid
           ? t.official.a / t.official.valid
           : null
-        : t.projection.share;
+        : displayProjection(t.projection,s.mode).share;
     const color =
       q === null
         ? "#30343b"
@@ -522,7 +522,7 @@ function renderDetails(s: Snapshot) {
   $("details").innerHTML =
     tab === "method"
       ? `<h2>Método e cobertura</h2><p>Projeção = votos observados + estimativa dos votos restantes no mesmo universo. Transferência líquida por UF/capital/interior e swing logit hierárquico BR → região → UF → município. A mistura muda gradualmente entre 5% e 15% do eleitorado observado.</p><dl><dt>Universo modelado</dt><dd>${num(s.projection.modeledSections)} unidades · cobertura ${pct(s.projection.coverage)}</dd><dt>Intervalo</dt><dd>Bootstrap por municípios e choques nacional/UF sobre o eleitorado restante, que encolhem com a raiz da fração não observada. Faixa de 95% calibrada provisoriamente na reprodução nacional de 2022 (uma eleição). Projeção exibida a partir de 1% do eleitorado observado, com aviso até 2,5%.</dd><dt>Parciais municipais</dt><dd>Quando os BUs por seção ainda não estão publicados, o parcial oficial de cada município é distribuído entre as seções já totalizadas (configuração de seções do TSE ou, na falta dela, ordem de recebimento do 1º turno de 2026), conforme o perfil de 1º turno de cada seção. O BU real sempre substitui a estimativa.</dd><dt>Histórico ausente</dt><dd>Excluído do universo modelado e explicitado na cobertura. Sem expansão para representar o país.</dd><dt>Selo de vencedor</dt><dd>Bloqueado. Probabilidade de vitória não calculada.</dd><dt>Municípios e comparação histórica</dt><dd>Dependem de base e correspondências oficiais completas. A seleção de UF permite explorar seus municípios; a comparação usa o universo correspondente.</dd></dl><p>O dado oficial EA20 é independente da coleta de BUs. Correções substituem versões anteriores. Dados sintéticos servem apenas para ensaios.</p>`
-      : `<h2>Diagnóstico da coleta</h2><dl><dt>Versão do painel</dt><dd>${esc(s.id)} · #${s.sequence}</dd><dt>Modo</dt><dd>${s.mode === "simulation" ? "Ensaio sintético" : "Oficial / coleta real"}</dd><dt>Fonte oficial gerada em</dt><dd>${esc(s.health.sourceTime ?? "Indisponível")}</dd><dt>Snapshot criado em</dt><dd>${esc(s.createdAt)}</dd><dt>Último BU coletado</dt><dd>${esc(s.health.collectedAt ?? "Nenhum")}</dd><dt>Hash da base</dt><dd>${esc(s.health.baseHash ?? "Base não importada")}</dd><dt>Modelo</dt><dd>${esc(s.health.modelVersion)} · calibração independente pendente</dd><dt>Estado reportado</dt><dd>${esc(s.health.state)} · ${esc(s.health.message)}</dd><dt>Continuidade da coleta</dt><dd>Acompanhe os horários e o estado dos grupos. Falhas ou ausência de confirmações recentes são sinalizadas no painel.</dd></dl>`;
+      : `<h2>Diagnóstico da coleta</h2><dl><dt>Versão do painel</dt><dd>${esc(s.id)} · #${s.sequence}</dd><dt>Modo</dt><dd>${s.mode === "simulation" ? "Ensaio sintético" : "Oficial / coleta real"}</dd><dt>Fonte oficial gerada em</dt><dd>${esc(s.health.sourceTime ?? "Indisponível")}</dd><dt>Snapshot criado em</dt><dd>${esc(s.createdAt)}</dd><dt>Última observação coletado</dt><dd>${esc(s.health.collectedAt ?? "Nenhum")}</dd><dt>Hash da base</dt><dd>${esc(s.health.baseHash ?? "Base não importada")}</dd><dt>Modelo</dt><dd>${esc(s.health.modelVersion)} · calibração independente pendente</dd><dt>Estado reportado</dt><dd>${esc(s.health.state)} · ${esc(s.health.message)}</dd><dt>Continuidade da coleta</dt><dd>Acompanhe os horários e o estado dos grupos. Falhas ou ausência de confirmações recentes são sinalizadas no painel.</dd></dl>`;
   if (tab === "health") {
     const dl = $("details").querySelector("dl")!;
     for (const [label, value] of [
