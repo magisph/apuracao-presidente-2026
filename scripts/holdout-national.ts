@@ -24,6 +24,13 @@ const receipt = (value: string) => {
   if (!m) throw Error(`unknown receipt ${value}`);
   return `${m[3]}-${m[2]}-${m[1]}T${m[4]}-03:00`;
 };
+// Capital codes come from the already-read operational geography, not outcomes.
+const capitalsByUF = new Map<string, Set<string>>();
+for (const s of JSON.parse(await readFile("data/base.json", "utf8")).sections as SectionBase[])
+  if (s.capital) {
+    if (!capitalsByUF.has(s.uf)) capitalsByUF.set(s.uf, new Set());
+    capitalsByUF.get(s.uf)!.add(s.municipality);
+  }
 for (const [uf, , region] of STATES) {
   const rounds: BwebSection[][] = [];
   for (const round of [1, 2]) {
@@ -58,9 +65,7 @@ for (const [uf, , region] of STATES) {
     console.log(`${uf}/${round}: ${rows.length} sections`);
   }
   const geography = rounds[1].map(s => ({ ...s, region, capital: false, matched: false }));
-  // Capital codes come from the already-read operational geography, not outcomes.
-  const operational = JSON.parse(await readFile("data/base.json", "utf8")).sections as SectionBase[];
-  const capitals = new Set(operational.filter(s => s.uf === uf && s.capital).map(s => s.municipality));
+  const capitals = capitalsByUF.get(uf) ?? new Set<string>();
   for (const s of geography) s.capital = capitals.has(s.municipality);
   base.push(...historicalReference(geography, rounds[0]));
   current.push(...rounds[1]);
