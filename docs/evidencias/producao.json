@@ -1,0 +1,72 @@
+{
+  "url": "https://apuracao-presidente-2026.phdtemiranda.workers.dev",
+  "repository": "https://github.com/magisph/apuracao-presidente-2026",
+  "workerVersion": "8d7a7095-bb74-409f-aeeb-35bb211d9a4a",
+  "d1Id": "0827acf3-6d7f-4351-b361-4e19e1fad55f",
+  "verifiedAt": "2026-10-24T15:20:16.309Z",
+  "integrity": {
+    "checkedAt": "2026-10-24T15:11:09.777Z",
+    "batchCreated": 201,
+    "idempotentRepeat": 200,
+    "immutableConflict": 409,
+    "fencedOldEpoch": 409,
+    "incompleteSnapshotRejected": 409,
+    "latestUnchanged": "live-1",
+    "municipalities": 22,
+    "probeContainsVotes": false
+  },
+  "runtime": {
+    "checkedAt": "2026-10-24T15:20:16.309Z",
+    "root": "https://apuracao-presidente-2026.phdtemiranda.workers.dev",
+    "snapshot": "live-3",
+    "source": "https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.jws",
+    "officialVotes": 0,
+    "observedBUs": 0,
+    "baseHash": "2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff",
+    "modelVersion": "transfer-logit-v2-coherent",
+    "modelHash": "5ae9c873a8996d5c590dde80d5d8368ee53ed067a41829e2fe430e82e7a02ae3",
+    "healthState": "ok",
+    "checkedSourceAt": "2026-10-24T15:20:05.867Z",
+    "groups": {
+      "g1": {
+        "checkedAt": "2026-10-24T15:19:39.025Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g4": {
+        "checkedAt": "2026-10-24T15:19:48.955Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g2": {
+        "checkedAt": "2026-10-24T15:19:39.800Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g0": {
+        "checkedAt": "2026-10-24T15:19:37.475Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g3": {
+        "checkedAt": "2026-10-24T15:19:45.130Z",
+        "queue": 0,
+        "state": "ok"
+      }
+    },
+    "privateIngestStatus": 200,
+    "municipalitiesSP": 645,
+    "historyVersions": 3
+  },
+  "chainTestRun": 40105848462,
+  "automaticallyDispatchedRun": 40106029417,
+  "validationRun": 40106658863,
+  "deadline": "2026-10-26T12:00:00Z",
+  "pcPhysicallyOffTested": false,
+  "fullElectionLoadTested": false,
+  "tests": {
+    "passed": 59,
+    "failed": 0
+  },
+  "baseHash": "2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff"
+}

@@ -16,7 +16,7 @@ Os defeitos de código identificados na revisão foram tratados. Precisão nacio
 ## Bloqueado / Não verificado
 
 - **Precisão nacional: Bloqueado.** Falta holdout nacional independente e replay temporal real com versões/correções. O teste AC2022 e o stress sintético não comprovam cobertura nacional de 95%. Os ensaios de 2014/2018 não foram executados. Probabilidade e selo estatístico de vencedor permanecem desabilitados.
-- **Nuvem: Não verificada.** Nenhum repo, Worker ou D1 foi publicado. CPU, quotas da conta, persistência e retomada externas, disponibilidade dos runners e PC desligado exigem ensaio real autorizado.
+- **Nuvem publicada:** gravação/leitura D1, autenticação, rejeição de conflitos, publicação incompleta, retomada de runners e encadeamento foram verificados. CI Linux/Node24 passou. Carga eleitoral completa e desligamento físico do PC continuam não verificados. Evidências atuais em [nuvem](nuvem.md).
 - A visão municipal não integra EA20 municipal; oferece projeção hierárquica e comparação histórica. Apuração oficial do mapa permanece por UF.
 - A assinatura JWS é verificada com chave oficial fixada. Não se afirma verificação de cadeia X.509/LCR ou da assinatura interna dos BUs.
 

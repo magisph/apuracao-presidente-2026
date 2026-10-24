@@ -1,40 +1,46 @@
-# Operação independente do PC — preparada, ainda não publicada
+# Operação em produção — 24/10/2026
 
-O desenho usa repositório público GitHub, Actions com processos contínuos e Cloudflare Worker/D1. Não usa Docker. Nenhum recurso externo foi criado nesta implementação. A preferência por repositório público foi registrada; publicação Git e provisionamento ainda exigem autorização explícita.
+Painel e API: **https://apuracao-presidente-2026.phdtemiranda.workers.dev/**
 
-## Artefatos prontos para revisão
+Repositório público: **https://github.com/magisph/apuracao-presidente-2026**
 
-- `worker/index.ts`: leituras públicas e ingestão autenticada.
-- `worker/schema.sql`: leases com fencing, lotes imutáveis, snapshots, páginas municipais e heartbeat.
-- `worker/wrangler.toml.example`: configuração sem conta, segredo ou identificador real.
-- `.github/workflows/collect.yml`: coordenador e cinco coletores, jobs de 345 minutos e encadeamento opcional até prazo explícito.
-- `dist/`: frontend estático compilado. Configurar `VITE_API_BASE` com a URL do Worker antes do build de publicação.
+Frontend em Workers Static Assets, API no mesmo Worker e persistência em D1. Coordenador e cinco grupos executam em runners Ubuntu do GitHub Actions. Não foi contratado plano pago nem alterado qualquer recurso dos demais projetos da conta.
 
-## Gate de publicação
+## Configuração vigente
 
-Após autorização, criar repositório público, D1 e Worker; aplicar o schema somente no banco novo identificado; configurar `INGEST_TOKEN` como secret e `ORIGIN` como o endereço do painel. Publicar o frontend estático. Nada disso foi executado.
+- Worker/D1: `apuracao-presidente-2026`; configuração em `worker/wrangler.toml`.
+- `INGEST_TOKEN` está configurado como secret no Worker e no GitHub. Seu valor não consta no código/commits.
+- Variables do repositório: `INGEST_URL`, `BASE_URL`, `BASE_SHA256`, `CHAIN_ENABLED=true`, `COLLECTION_DEADLINE_UTC=2026-10-26T12:00:00Z`.
+- A base gzip é baixada da Release, descomprimida e validada por SHA-256 em cada runner. Nenhum dado eleitoral é sintetizado para produção.
+- SHA-256 do JSON: `2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff`.
+- Base: https://github.com/magisph/apuracao-presidente-2026/releases/tag/base-20261024-2d2f46c70fff
+- Encadeamento usa GITHUB_TOKEN efêmero com `actions:write` somente no job de continuação. Não usa token pessoal permanente.
+- Prazo final: **26/10/2026 às 9h de Brasília**. Cada processo limita sua duração pelo menor entre 345 min e o prazo absoluto; verificações impedem iniciar ciclos após o prazo. O sinal de prazo também cancela HTTP em andamento e impede novas requisições.
 
-GitHub variables: `INGEST_URL`, `BASE_URL`, `BASE_SHA256`. A base deve estar congelada, conferida e disponível por HTTPS. GitHub secrets: `INGEST_TOKEN`; para encadear execuções, `CHAIN_TOKEN` com permissão restrita de Actions no repositório. `CHAIN_ENABLED=true` e `COLLECTION_DEADLINE_UTC` são obrigatórios para continuidade. Manter encadeamento desligado até o primeiro ensaio no runner real.
+## Verificado no ambiente externo
 
-Sem `BASE_URL`/hash, apenas o coordenador consegue consultar EA20; os grupos de BU encerram com Bloqueado. Não usar cron como relógio de apuração. O encadeamento pode ter lacunas por fila/indisponibilidade do GitHub: checkpoints permitem retomada, mas o código sozinho não garante continuidade.
+1. CI Linux/Node 24: 59 testes, build e auditoria aprovados.
+2. Ensaio curto com seis jobs concluído; outra execução retomou com novas épocas de lease.
+3. Encadeamento do segundo ensaio disparou automaticamente a operação de 345 min. No ensaio, os owners persistidos no D1 identificaram a execução 40106029417, sem processo coletor neste PC.
+4. Snapshot real de pré-apuração e 71 blobs municipais publicados no D1. Resultado oficial retornou zero votos; não houve validação de precisão com votos reais de 2T.
+5. Ingestão sem credencial rejeitada401; lote administrativo sem votos: criação201, reenvio200, conflito409 e epoch antiga409. Snapshot com páginas inexistentes rejeitado409, mantendo o último publicado.
+6. Navegador abriu o painel público e carregou Acre→Porto Walter, com 22 municípios e malha correspondente.
+7. Consulta de Analytics inicial: 145 invocações do Worker, zero erros; CPU P50=3,874ms eP99=10,481ms. A documentação admite rollover de CPU; essa amostra não prova o comportamento no pico eleitoral.
 
-## Evidência exigida no ambiente externo
+## Continuidade, custo e limites
 
-1. Gravação e leitura reais do D1; reenvio idempotente; publicação incompleta municipal rejeitada.
-2. Interromper e reiniciar jobs, confirmar restauração e fencing de processo antigo.
-3. Conferir snapshot com navegador fechado e depois PC desligado.
-4. Medir atraso por fonte, profundidade da fila, throughput, CPU, requisições e linhas D1 lidas/escritas. Confrontar os limites atuais da conta e a janela completa de apuração.
-5. Estimar armazenamento para a semana. Snapshots eleitorais só mudam quando o conteúdo muda; verificações sem alteração geram heartbeat, sem duplicar todo o histórico.
-6. Registrar URL publicada, hash da base/modelo/configuração, execução GitHub e resultado dos checks.
+Projeções são publicadas nominalmente a cada 90 s; EA20 nacional/heartbeat a cada 15 s; grupos até 15 requisições/s, coordenador até 5. Heartbeats dos grupos a cada 60 s. Falhas usam retry/backoff, circuito de 403, cooldown de 404 e respeito a 429.
 
-O limite configurado é de 15 requisições/s por grupo e 5 no coordenador, total 80. Retries e auxiliares passam pelo mesmo limitador. Não se pressupõe IP diferente por runner. 403 abre circuito por dez minutos; 429 respeita Retry-After; 404 tem cooldown.
+Actions não garante disponibilidade contínua: filas e retomada de leases podem produzir lacunas. O diagnóstico sinaliza atrasos; nunca apresentar o relógio de transporte como se fosse atualização dos votos. Artefatos limitados a outbox/saúde por 2 dias, sem repetir a base ou o ledger inteiro em cada execução.
 
-Publicação inicial: `PUBLISH_INTERVAL_MS=90000`; consulta nacional e heartbeat do coordenador nominalmente a cada15s. O dado oficial mais recente acompanha o heartbeat em modo ao vivo; replay usa somente as versões imutáveis. Coletores agrupam até128 observações por lote e enviam heartbeat a cada60s. O coordenador lê o fluxo global incremental em uma chamada por página. Páginas municipais são gzip/Base64, deduplicadas por SHA-256 e referenciadas no manifesto do snapshot, sem repetir o conteúdo de páginas intactas.
+Estimativa local: cerca de 273 MB de dados, 71 mil escritas D1 e 74 mil requisições dinâmicas/dia para o cenário descrito em `data/storage-budget.json`. Quotas são compartilhadas com a conta e dependem de uso, correções, retries e público. O D1 após os ensaios ocupava menos de 1 MB; isso é pré-apuração, não ensaio completo de carga.
 
-Dimensionamento local: 5.757 municípios/localidades do exterior, 71 páginas; cenário com observações sintéticas e6h de mudanças, todas as páginas mudando em todas as versões, gerou estimativa de272.869.660bytes de dados,71.223linhas escritas e74.461requisições em24h, com um visualizador. É estimativa, sem CPU real, índices medidos, tráfego adicional ou amplificação de retries. Limite de500MB por banco D1Free confirmado na documentação oficial; conferir também os limites da conta antes de publicar. O gate externo continua obrigatório.
+**Não verificado:** desligamento físico deste PC e comportamento sob o pico completo de BUs. A execução efetiva em runners remotos foi comprovada. Precisão nacional/cobertura95% continuam bloqueadas; vencedor estatístico e probabilidade numérica permanecem desabilitados.
 
-Não executar preparação de bases em paralelo com a coleta eleitoral. Não afirmar que o plano gratuito suporta a operação sem medição. A aprovação de um teste SQLite local não comprova quotas, durabilidade ou disponibilidade do D1 publicado.
+## Operação e nova publicação
 
-Após a revisão: coletores mantêm outbox durável em `data/outbox-*.json`, com ID/payload estáveis até confirmação. Falhas usam backoff de até60s. Se o runner termina antes da confirmação, a execução seguinte também pode recolher a seção a partir do inventário, pois a restauração remota só contém lotes confirmados. Heartbeat recente não elimina erros/quarentenas declarados.
+Consultar o workflow Coleta eleitoral para estado dos jobs. Para iniciar outra janela: `workflow_dispatch`, duração 345 min, continuação ligada e prazo futuro explícito. Para encerrar o encadeamento: variable `CHAIN_ENABLED=false`; uma execução já iniciada continua até seu limite ou cancelamento explícito.
 
-Replay inicial carrega as páginas anteriores do histórico; atualizações reaproveitam o cache. Leituras municipais adicionais e repetições por falhas precisam entrar na medição real de quota. Documentação oficial consultada em24/10/2026: Workers Free100.000requisições/dia,10msCPU/requisição; D1Free500MB/banco. [Workers](https://developers.cloudflare.com/workers/platform/limits/) · [D1](https://developers.cloudflare.com/d1/platform/limits/).
+Nova versão: `npm ci --ignore-scripts`, `npm test`, `npm run build`, `npx wrangler@4.152.0 deploy --config worker/wrangler.toml --dry-run`, revisão do alvo e então o mesmo comando sem `--dry-run`. CLI deve estar autenticada na conta configurada. Nunca colocar credenciais no frontend ou no TOML.
+
+Fontes: [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/), [limites Workers](https://developers.cloudflare.com/workers/platform/limits/), [limites D1](https://developers.cloudflare.com/d1/platform/limits/), [encadeamento com GITHUB_TOKEN](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).

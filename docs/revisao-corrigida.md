@@ -1,5 +1,7 @@
 # Correções da revisão — 24/10/2026
 
+Registro da etapa local anterior à publicação. A implantação posterior e as evidências externas atuais estão em [nuvem.md](nuvem.md).
+
 ## Entrega local
 
 1. **Lotes:** fila durável antes do envio, ID e payload estáveis, repetição com backoff e remoção somente após confirmação. Timeout após commit remoto reenvia a mesma identidade idempotente. Testes também executam `scripts/collect.ts` em processos isolados, com transporte controlado.
