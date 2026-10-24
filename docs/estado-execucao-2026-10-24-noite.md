@@ -23,3 +23,4 @@ Validação 2022 (erro em pp, por fração 1/3/5/10/15/20/50%):
 3. Revisão independente do branch; corrigir achados com teste.
 4. Com confirmação do usuário: merge em main, push, CI e verificação da primeira publicação.
 5. 25/10, 15h15 de Brasília: realinhamento do run (ver `docs/nuvem.md`).
+- 24/10 ~17h: suíte do commit 94eea5b: 87/87 aprovados. Ordem do 1º turno em PR; calibração iniciou as varreduras (resultado por linha JSON em data/holdout-calibration.log).
