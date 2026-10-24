@@ -4,7 +4,7 @@ import { gzipSync, gunzipSync } from "node:zlib";
 import { openCsvZip } from "../src/collector/zip.ts";
 import { parseBweb } from "../src/collector/base.ts";
 import { verifiedArchive } from "../src/collector/download.ts";
-import { historicalReference, evaluateOperational } from "../src/core/evaluation.ts";
+import { historicalReference, evaluateOperational, evaluateMunicipal } from "../src/core/evaluation.ts";
 import { STATES } from "../src/core/demo.ts";
 import type { BwebSection } from "../src/collector/base.ts";
 import type { Observation, SectionBase } from "../src/core/types.ts";
@@ -19,6 +19,8 @@ const catalog = await response.json() as any;
 await writeFile(`${directory}/catalog.json`, JSON.stringify(catalog));
 const resources = catalog.result.resources as { name: string; url: string }[];
 const provenance: any[] = [], base: SectionBase[] = [], current: BwebSection[] = [];
+// HOLDOUT_MODE=municipal replays only municipal partials; counted sections are guessed by first-round receipt order.
+const municipalMode = process.env.HOLDOUT_MODE === "municipal", firstReceipt = new Map<string, number>();
 const receipt = (value: string) => {
   const m = value.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}:\d{2}:\d{2})$/);
   if (!m) throw Error(`unknown receipt ${value}`);
@@ -67,6 +69,7 @@ for (const [uf, , region] of STATES) {
   const geography = rounds[1].map(s => ({ ...s, region, capital: false, matched: false }));
   const capitals = capitalsByUF.get(uf) ?? new Set<string>();
   for (const s of geography) s.capital = capitals.has(s.municipality);
+  for (const s of rounds[0]) for (const m of s.members) firstReceipt.set(m, Date.parse(receipt(s.receipt)));
   base.push(...historicalReference(geography, rounds[0]));
   current.push(...rounds[1]);
   await writeFile(`${directory}/progress.json`, JSON.stringify({ provenance, units: base.length }));
@@ -78,12 +81,35 @@ const events: Observation[] = current.map((s, i) => ({ ...identity, id: s.id, ve
   a: s.firstA, b: s.firstB, valid: s.firstValid, blank: s.blank, null: s.null,
   turnout: s.turnout!, electorate: s.electorate, sourceTime: receipt(s.receipt), retrievedAt: receipt(s.receipt) }));
 const truth = { a: current.reduce((n, s) => n + s.firstA, 0), b: current.reduce((n, s) => n + s.firstB, 0) };
+// HOLDOUT_ORDER=oracle uses the real second-round arrival (the section configuration known live); default: first round.
+const order = process.env.HOLDOUT_ORDER === "oracle"
+  ? new Map(events.map((e, i) => [e.id, i] as [string, number]))
+  : new Map(base.map(s => [s.id, Math.min(...s.members.map(m => firstReceipt.get(m) ?? Number.MAX_SAFE_INTEGER))] as [string, number]));
+// HOLDOUT_SHOCKS="n:u,n:u" sweeps the uncertainty shocks in both modes; point estimates do not depend on them.
+if (process.env.HOLDOUT_SHOCKS) {
+  const runs: any[] = [];
+  for (const variant of process.env.HOLDOUT_SHOCKS.split(",")) {
+    const [nationalShock, ufShock] = variant.split(":").map(Number), options = { nationalShock, ufShock };
+    for (const mode of ["section", "municipal"]) {
+      const r = mode === "municipal" ? evaluateMunicipal(base, events, identity, truth, order, undefined, options)
+        : evaluateOperational(base, events, identity, truth, undefined, options);
+      const row = { mode, nationalShock, ufShock, samples: r.samples.map((s: any) =>
+        ({ target: s.target, errorPP: s.errorPP, covered: s.covered, widthPP: s.widthPP })) };
+      runs.push(row); console.log(JSON.stringify(row));
+    }
+  }
+  await writeFile(`${directory}/report-calibration.json`, JSON.stringify({ truth: truth.a / (truth.a + truth.b), runs }, null, 2));
+  process.exit(0);
+}
 const result = { kind: "national-real-counts-reconstructed-final-receipt-order", year: 2022,
   modelSha256: createHash("sha256").update(await readFile("src/core/model.ts")).digest("hex"),
   training: false, parameterTuningPerformed: false, calibrationSufficient: false,
   limitations: ["Uma eleição nacional não demonstra cobertura de 95% entre eleições.",
     "Recibos finais não recuperam versões substituídas, exclusões e atrasos reais de disponibilidade.",
     "Capital histórica usa código municipal operacional; divergências territoriais exigem auditoria."],
-  provenance, ...evaluateOperational(base, events, identity, truth) };
-await writeFile(`${directory}/report.json`, JSON.stringify(result, null, 2));
+  provenance, mode: municipalMode ? "municipal-partials-first-round-order" : "section-bus",
+  ...(municipalMode
+    ? evaluateMunicipal(base, events, identity, truth, order)
+    : evaluateOperational(base, events, identity, truth)) };
+await writeFile(`${directory}/${municipalMode ? `report-municipal${process.env.HOLDOUT_ORDER === "oracle" ? "-oracle" : ""}` : "report"}.json`, JSON.stringify(result, null, 2));
 console.log(JSON.stringify(result, null, 2));

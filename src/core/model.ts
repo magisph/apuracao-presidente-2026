@@ -9,11 +9,16 @@ const stratum = (s: SectionBase) =>
 const profile = (s: SectionBase) =>
   s.firstValid ? (s.firstA + 0.5 * s.firstOther) / s.firstValid : 0.5;
 type Acc = { weight: number; sum: number };
+// Calibrated on the 2022 national replay (section and municipal modes); one election, so provisional.
+export const NATIONAL_SHOCK = 0.045, UF_SHOCK = 0.05;
 export interface ProjectionOptions {
   replicates?: number;
   seed?: number;
   universeElectorate?: number;
   universeByUF?: Record<string, number>;
+  // Logit shocks on the unobserved remainder (national and per UF), scaled by sqrt(remaining electorate share).
+  nationalShock?: number;
+  ufShock?: number;
 }
 export interface ProjectionHierarchy {
   national: Projection;
@@ -251,10 +256,13 @@ function calculate(
     cityDraws = new Float64Array(cityIds.size);
   const draws: number[] = [];
   const groupDrawA = new Float64Array(groups.length);
+  const shockScale = Math.sqrt(Math.max(0, 1 - progress)),
+    nationalShock = (options.nationalShock ?? NATIONAL_SHOCK) * shockScale,
+    ufShock = (options.ufShock ?? UF_SHOCK) * shockScale;
   for (let i = 0; i < reps; i++) {
-    const national = normal() * 0.2;
+    const national = normal() * nationalShock;
     for (const event of events) {
-      if (event.uf) ufDraws[event.index] = normal() * 0.2;
+      if (event.uf) ufDraws[event.index] = normal() * ufShock;
       else
         cityDraws[event.index] = cluster.length
           ? cluster[Math.floor(random() * cluster.length)] - center

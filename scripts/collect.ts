@@ -379,6 +379,7 @@ do {
         );
         snapshot.health.modelHash = modelHash;
         snapshot.health.electorateDifferences = ledger.electorateDifferences().length;
+        snapshot.health.estimatedSections = ledger.values().filter((o) => o.estimated).length;
         snapshot.health.configHash = createHash("sha256")
           .update(
             JSON.stringify({

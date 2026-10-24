@@ -98,3 +98,12 @@ test("a pending municipal response cannot overwrite a newer territory selection"
   assert.equal(loads.current(request,"AC","BA"),false);
   assert.equal(loads.current(request,"AC","BR"),false);
 });
+test("projection is hidden below 1% observed and flagged as unreliable until 2.5%", async () => {
+  const { projectionDisplay } = await import("../src/ui/state.ts");
+  assert.equal(projectionDisplay(false, 0.5), "hidden");
+  assert.equal(projectionDisplay(true, 0.009), "hidden");
+  assert.equal(projectionDisplay(true, 0.01), "unreliable");
+  assert.equal(projectionDisplay(true, 0.0249), "unreliable");
+  assert.equal(projectionDisplay(true, 0.025), "shown");
+  assert.equal(projectionDisplay(true, 0.005, "simulation"), "shown");
+});
