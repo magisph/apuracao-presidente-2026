@@ -45,6 +45,7 @@ jobs:
         env:
           COLLECTOR_SHARD: ${{ matrix.shard }}
           COLLECTOR_MINUTES: ${{ inputs.duration_minutes || '345' }}
+          COLLECTION_DEADLINE_UTC: ${{ vars.COLLECTION_DEADLINE_UTC }}
           PUBLISH_INTERVAL_MS: "90000"
           INGEST_URL: ${{ vars.INGEST_URL }}
           INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}

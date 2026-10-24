@@ -22,6 +22,7 @@ import { DurableOutbox } from "../src/collector/outbox.ts";
 import { collectionHealth } from "../src/collector/health.ts";
 import { projectHierarchy } from "../src/core/model.ts";
 import { verifyResourceHashes } from "../src/collector/provenance.ts";
+import { collectionStopAt } from "../src/collector/schedule.ts";
 import type { SectionBase, Observation, Snapshot } from "../src/core/types.ts";
 
 const args = process.argv.slice(2),
@@ -29,6 +30,8 @@ const args = process.argv.slice(2),
   shard = process.env.COLLECTOR_SHARD ?? "coordinator";
 if (!/^coordinator$|^g[0-4]$/.test(shard))
   throw Error("invalid COLLECTOR_SHARD");
+const stopAt=collectionStopAt(Number(process.env.COLLECTOR_MINUTES ?? 350),process.env.COLLECTION_DEADLINE_UTC);
+if(Date.now()>=stopAt) { console.log("Prazo de coleta encerrado."); process.exit(0); }
 const endpoint = process.env.INGEST_URL,
   token = process.env.INGEST_TOKEN,
   owner = `${process.env.GITHUB_RUN_ID ?? "local"}-${shard}-${randomUUID()}`;
@@ -241,9 +244,6 @@ let lastCheckpoint = 0;
 const errors = new Set<string>();
 let scannedAt = 0,
   lastBatch = 0;
-const stopAt =
-  Date.now() +
-  Math.min(Number(process.env.COLLECTOR_MINUTES ?? 350), 350) * 60000;
 let running = true;
 process.on("SIGINT", () => {
   running = false;
@@ -254,7 +254,9 @@ process.on("SIGTERM", () => {
 do {
   const loopStarted = Date.now();
   try {
+    if(Date.now()>=stopAt) break;
     await renew();
+    if(Date.now()>=stopAt) break;
     if (!(await deliverPending())) continue;
     if (shard === "coordinator") {
       if (endpoint) {
@@ -485,6 +487,7 @@ do {
           `${TSE}/ele2026/6258/dados/br/br-e006258-ab.json`,
         );
         for (const ufCode of group!.ufs) {
+          if(Date.now()>=stopAt) break;
           await renew();
           const uf = ufCode.toLowerCase();
           await client.official(
@@ -504,6 +507,7 @@ do {
           .filter(([id]) => Date.now() >= (retryAt.get(id) ?? 0))
           .slice(0, 128);
       for (const [id, generation] of slice) {
+        if(Date.now()>=stopAt) break;
         await renew();
         try {
           const old = ledger.records.get(id),
