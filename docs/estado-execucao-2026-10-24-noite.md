@@ -24,3 +24,9 @@ Validação 2022 (erro em pp, por fração 1/3/5/10/15/20/50%):
 4. Com confirmação do usuário: merge em main, push, CI e verificação da primeira publicação.
 5. 25/10, 15h15 de Brasília: realinhamento do run (ver `docs/nuvem.md`).
 - 24/10 ~17h: suíte do commit 94eea5b: 87/87 aprovados. Ordem do 1º turno em PR; calibração iniciou as varreduras (resultado por linha JSON em data/holdout-calibration.log).
+
+## Interrupção a pedido do usuário (24/10, ~17h05 de Brasília)
+Processos `prepare-order.ts` (parou depois de PR) e calibração (`holdout-national.ts`, sem resultado final) encerrados. Retomada:
+- Ordem do 1º turno: `node --max-old-space-size=6144 --experimental-strip-types scripts/prepare-order.ts > data/prepare-order.log 2>&1` (ZIPs já baixados em `data/historical/` são reaproveitados por SHA-512).
+- Calibração: `HOLDOUT_SHOCKS="0.03:0.035,0.045:0.05,0.07:0.07,0.1:0.1" node --max-old-space-size=8192 --experimental-strip-types scripts/holdout-national.ts > data/holdout-calibration.log 2>&1` (~25 min; saída em `data/holdout-national-2022/report-calibration.json`).
+- O monitor da primeira publicação do run novo deixou de existir: conferir `/api/health` e GitHub Actions manualmente.
