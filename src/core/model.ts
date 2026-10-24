@@ -10,7 +10,7 @@ const profile = (s: SectionBase) =>
   s.firstValid ? (s.firstA + 0.5 * s.firstOther) / s.firstValid : 0.5;
 type Acc = { weight: number; sum: number };
 // Calibrated on the 2022 national replay (section and municipal modes); one election, so provisional.
-export const NATIONAL_SHOCK = 0.045, UF_SHOCK = 0.05;
+export const NATIONAL_SHOCK = 0.03, UF_SHOCK = 0.035;
 export interface ProjectionOptions {
   replicates?: number;
   seed?: number;

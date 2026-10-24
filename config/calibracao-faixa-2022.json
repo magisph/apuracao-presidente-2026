@@ -1,0 +1,506 @@
+{
+  "kind": "provisional-same-election-calibration",
+  "year": 2022,
+  "createdAt": "2026-10-24T22:49:47.876Z",
+  "sourceReportSha256": "878dc9db3a25e06202ec0796f9fe90e437ca0a5d1a1677a3c4c549c1b5ab6507",
+  "modelSha256": "f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd",
+  "selection": "smallest pair in the authorized grid covering every target below 100% in section and municipal modes",
+  "selected": {
+    "nationalShock": 0.03,
+    "ufShock": 0.035,
+    "coveredCheckpoints": 14,
+    "requiredCheckpoints": 14
+  },
+  "targets": [
+    0.01,
+    0.03,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.5
+  ],
+  "replicates": 400,
+  "seed": 20261025,
+  "municipalOrder": "first-round receipt order (2022), not oracle",
+  "parameterTuningPerformed": true,
+  "independentValidation": false,
+  "statisticalWinnerEnabled": false,
+  "pointModelUnchanged": true,
+  "limitations": [
+    "Same 2022 election used for parameter selection and retrospective coverage; not independent validation.",
+    "Final received BUs reconstruct an order, not all intermediate corrections or publication delays.",
+    "100% is retained in the report but excluded from selection: historical coverage differences remain after interval collapse."
+  ],
+  "truth": 0.5090240511717216,
+  "candidates": [
+    {
+      "nationalShock": 0.03,
+      "ufShock": 0.035,
+      "passes": true,
+      "runs": [
+        {
+          "mode": "section",
+          "nationalShock": 0.03,
+          "ufShock": 0.035,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.46970564187700514,
+              "covered": true,
+              "widthPP": 3.2499988748786404
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.293740737103132,
+              "covered": true,
+              "widthPP": 2.862262335863852
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.1869351780322437,
+              "covered": true,
+              "widthPP": 2.488173536054794
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.13609575243701544,
+              "covered": true,
+              "widthPP": 2.502292791565824
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.13020191375507917,
+              "covered": true,
+              "widthPP": 2.2229676738523105
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.11174247699835549,
+              "covered": true,
+              "widthPP": 2.1427465845115456
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.024972253811783585,
+              "covered": true,
+              "widthPP": 0.9812473744789774
+            },
+            {
+              "target": 1,
+              "errorPP": 0.00005929216740918619,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        },
+        {
+          "mode": "municipal",
+          "nationalShock": 0.03,
+          "ufShock": 0.035,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.4905690157804732,
+              "covered": true,
+              "widthPP": 4.112608543034385
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.46290092898436663,
+              "covered": true,
+              "widthPP": 3.9251535722779787
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.44832741597616854,
+              "covered": true,
+              "widthPP": 3.4658211421330187
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.4771287580576544,
+              "covered": true,
+              "widthPP": 2.9709230374444173
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.6217747041019628,
+              "covered": true,
+              "widthPP": 2.5896014939693623
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.6239755538297809,
+              "covered": true,
+              "widthPP": 2.279267338823665
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.28603175671146897,
+              "covered": true,
+              "widthPP": 1.0571849087722018
+            },
+            {
+              "target": 1,
+              "errorPP": 0.0000025761989430606036,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nationalShock": 0.045,
+      "ufShock": 0.05,
+      "passes": true,
+      "runs": [
+        {
+          "mode": "section",
+          "nationalShock": 0.045,
+          "ufShock": 0.05,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.46970564187700514,
+              "covered": true,
+              "widthPP": 4.34816066407579
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.293740737103132,
+              "covered": true,
+              "widthPP": 4.093789577376178
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.1869351780322437,
+              "covered": true,
+              "widthPP": 3.5537515018214503
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.13609575243701544,
+              "covered": true,
+              "widthPP": 3.7249592863866257
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.13020191375507917,
+              "covered": true,
+              "widthPP": 3.226689697485341
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.11174247699835549,
+              "covered": true,
+              "widthPP": 3.069972094230955
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.024972253811783585,
+              "covered": true,
+              "widthPP": 1.432575046284057
+            },
+            {
+              "target": 1,
+              "errorPP": 0.00005929216740918619,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        },
+        {
+          "mode": "municipal",
+          "nationalShock": 0.045,
+          "ufShock": 0.05,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.4905690157804732,
+              "covered": true,
+              "widthPP": 5.071525260785586
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.46290092898436663,
+              "covered": true,
+              "widthPP": 4.895356986923305
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.44832741597616854,
+              "covered": true,
+              "widthPP": 4.248175751702915
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.4771287580576544,
+              "covered": true,
+              "widthPP": 4.042916339960079
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.6217747041019628,
+              "covered": true,
+              "widthPP": 3.422205311806692
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.6239755538297809,
+              "covered": true,
+              "widthPP": 3.2822213760026364
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.28603175671146897,
+              "covered": true,
+              "widthPP": 1.5578096905803918
+            },
+            {
+              "target": 1,
+              "errorPP": 0.0000025761989430606036,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nationalShock": 0.07,
+      "ufShock": 0.07,
+      "passes": true,
+      "runs": [
+        {
+          "mode": "section",
+          "nationalShock": 0.07,
+          "ufShock": 0.07,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.46970564187700514,
+              "covered": true,
+              "widthPP": 6.063834155720121
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.293740737103132,
+              "covered": true,
+              "widthPP": 6.150520821844796
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.1869351780322437,
+              "covered": true,
+              "widthPP": 5.35935587201779
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.13609575243701544,
+              "covered": true,
+              "widthPP": 5.714292449351721
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.13020191375507917,
+              "covered": true,
+              "widthPP": 4.904069289799446
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.11174247699835549,
+              "covered": true,
+              "widthPP": 4.781876387117634
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.024972253811783585,
+              "covered": true,
+              "widthPP": 2.2110373303053708
+            },
+            {
+              "target": 1,
+              "errorPP": 0.00005929216740918619,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        },
+        {
+          "mode": "municipal",
+          "nationalShock": 0.07,
+          "ufShock": 0.07,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.4905690157804732,
+              "covered": true,
+              "widthPP": 6.416953999997216
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.46290092898436663,
+              "covered": true,
+              "widthPP": 6.655859889843913
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.44832741597616854,
+              "covered": true,
+              "widthPP": 5.754130620255865
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.4771287580576544,
+              "covered": true,
+              "widthPP": 5.685343807188737
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.6217747041019628,
+              "covered": true,
+              "widthPP": 5.100613752260386
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.6239755538297809,
+              "covered": true,
+              "widthPP": 4.951525184983563
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.28603175671146897,
+              "covered": true,
+              "widthPP": 2.352626457403706
+            },
+            {
+              "target": 1,
+              "errorPP": 0.0000025761989430606036,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nationalShock": 0.1,
+      "ufShock": 0.1,
+      "passes": true,
+      "runs": [
+        {
+          "mode": "section",
+          "nationalShock": 0.1,
+          "ufShock": 0.1,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.46970564187700514,
+              "covered": true,
+              "widthPP": 8.18607055010736
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.293740737103132,
+              "covered": true,
+              "widthPP": 8.71928732501106
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.1869351780322437,
+              "covered": true,
+              "widthPP": 7.673877281889724
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.13609575243701544,
+              "covered": true,
+              "widthPP": 8.14734094220339
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.13020191375507917,
+              "covered": true,
+              "widthPP": 6.9733826588199435
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.11174247699835549,
+              "covered": true,
+              "widthPP": 6.7921182588547735
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.024972253811783585,
+              "covered": true,
+              "widthPP": 3.1476426179645802
+            },
+            {
+              "target": 1,
+              "errorPP": 0.00005929216740918619,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        },
+        {
+          "mode": "municipal",
+          "nationalShock": 0.1,
+          "ufShock": 0.1,
+          "samples": [
+            {
+              "target": 0.01,
+              "errorPP": 0.4905690157804732,
+              "covered": true,
+              "widthPP": 8.984433531692016
+            },
+            {
+              "target": 0.03,
+              "errorPP": 0.46290092898436663,
+              "covered": true,
+              "widthPP": 9.078940829163184
+            },
+            {
+              "target": 0.05,
+              "errorPP": 0.44832741597616854,
+              "covered": true,
+              "widthPP": 7.748742433226941
+            },
+            {
+              "target": 0.1,
+              "errorPP": 0.4771287580576544,
+              "covered": true,
+              "widthPP": 8.096550718846812
+            },
+            {
+              "target": 0.15,
+              "errorPP": 0.6217747041019628,
+              "covered": true,
+              "widthPP": 7.252695120106067
+            },
+            {
+              "target": 0.2,
+              "errorPP": 0.6239755538297809,
+              "covered": true,
+              "widthPP": 6.9697988632993475
+            },
+            {
+              "target": 0.5,
+              "errorPP": 0.28603175671146897,
+              "covered": true,
+              "widthPP": 3.3237831341277833
+            },
+            {
+              "target": 1,
+              "errorPP": 0.0000025761989430606036,
+              "covered": false,
+              "widthPP": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

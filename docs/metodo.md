@@ -26,11 +26,19 @@ O ajuste é nacional e realizado uma única vez por versão. Cada unidade restan
 
 ## Intervalo nominal e estabilidade
 
-Bootstrap por municípios dos resíduos observados em escala logit, com semente fixa, componente nacional comum e componente de UF correlacionado entre seções. 400 réplicas por padrão (configurável até 2000). Incerteza de partida 0,20 logit, sem afirmar calibração. Usar quantis 2,5/97,5 da parcela A. B é complemento invertido. Intervalo colapsa com universo totalmente observado. Amostras artificiais não demonstram cobertura real.
+Bootstrap por municípios dos resíduos observados em escala logit, com semente fixa, componente nacional comum e componente de UF correlacionado entre seções. 400 réplicas por padrão (configurável até 2000). Choques de 0,03 nacional e 0,035 por UF, multiplicados pela raiz quadrada da fração de eleitorado restante. O par é o menor da grade ensaiada que cobre todos os sete checkpoints abaixo de 100% nos modos seção e municipal do replay nacional de 2022. Usar quantis 2,5/97,5 da parcela A. B é complemento invertido. Intervalo colapsa com universo modelado totalmente observado. Amostras artificiais não demonstram cobertura real.
 
 Selo estatístico desabilitado nesta versão até validação independente de cobertura e regra de decisão. Probabilidade de vitória não calculada. A matemática de definição oficial usa limite de votos restantes informado e verificado, não projeção.
 
-Os mesmos sorteios por unidade formam as distribuições nacionais e territoriais. Quantis não são somáveis; a coerência é dos votos de cada réplica e das estimativas pontuais. As perturbações 0,20 continuam nominais, sem parâmetro calibrado inferido a partir do teste do Acre.
+Os mesmos sorteios por unidade formam as distribuições nacionais e territoriais. Quantis não são somáveis; a coerência é dos votos de cada réplica e das estimativas pontuais. A calibração é provisória e usa a mesma eleição empregada na escolha dos choques: não é validação independente entre eleições nem prova de cobertura futura de 95%. O checkpoint de 100% é registrado, mas não seleciona choques: diferenças entre o universo histórico modelado e o oficial não podem ser corrigidas por uma faixa que já colapsou.
+
+## Entrada municipal durante a apuração
+
+O fallback segue a prioridade de disponibilidade do método de Rodrigo Mahlmeister: andamento por município e EA20 municipal assinado alimentam estimativas explícitas por seção quando BUs individuais não estão disponíveis. A seleção usa a configuração de seções e, na ausência, a ordem de recebimento do primeiro turno congelada em `config/ordem-1t-2026.json.gz`, vinculada por SHA-256 à base.
+
+Distribuições inteiras preservam o parcial municipal e o limite de eleitorado conhecido. Elas são marcadas `estimated=true`; nunca são apresentadas como BUs lidos. Um BU real tem precedência e provoca nova reconciliação do residual. Quantidades ou horários incompatíveis entre arquivos deixam o município pendente; correção para zero retira estimativas. Diferenças impossíveis não geram votos negativos nem ajuste dos BUs reais.
+
+Todas as superfícies da interface ocultam estimativas abaixo de 1% do eleitorado observado no respectivo escopo; de 1% a 2,5% há aviso de baixa confiabilidade. Resultado oficial permanece independente. O ponto central do modelo, a mistura 5–15%, a hierarquia e as regras de vencedor foram preservados nesta calibração.
 
 ## Avaliação
 
