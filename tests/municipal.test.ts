@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { SectionLedger } from "../src/core/ledger.ts";
+import * as municipal from "../src/collector/municipal.ts";
 import { estimateMunicipalObservations, parseAndamento } from "../src/collector/municipal.ts";
 import type { Observation, SectionBase } from "../src/core/types.ts";
 
@@ -104,4 +105,17 @@ test("selected sections too small for the partial expand by receipt order instea
     order, identity, retrievedAt: "2026-10-25T20:31:00.000Z" });
   assert.deepEqual(totals(rows), { a: 380, b: 300, blank: 10, null: 10 });
   assert.equal(rows.length, 3);
+});
+
+test('configuration refresh removes withdrawn sections for that UF only',()=>{
+  const configured=new Set(['ac/01066/0001/0001','ba/00001/0001/0001']);
+  assert.equal(typeof (municipal as any).replaceConfiguredSections,'function');
+  (municipal as any).replaceConfiguredSections(configured,'AC',[{id:'ac/01066/0001/0002',generation:'25/10/2026 17:30:00'}]);
+  assert.deepEqual([...configured].sort(),['ac/01066/0001/0002','ba/00001/0001/0001']);
+});
+test('an outdated municipal partial cannot invent residual votes after newer real BUs',()=>{
+  const bu=real(sections[1]);
+  const previous=estimateMunicipalObservations({sections,partial:partial(200,150,1),real:[],previous:[],order,identity,retrievedAt:bu.retrievedAt});
+  const rows=estimateMunicipalObservations({sections,partial:partial(100,90,2,3,3),real:[bu],previous,order,identity,retrievedAt:bu.retrievedAt});
+  assert.equal(rows.filter(r=>r.status==='totalized').length,0);
 });

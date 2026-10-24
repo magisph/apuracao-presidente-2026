@@ -1,5 +1,18 @@
 import { randomUUID } from "node:crypto";
 import { AtomicStore } from "./store.ts";
+import { gzipText } from "../core/codec.ts";
+import type { Observation } from "../core/types.ts";
+export async function* observationBatches(data:{baseHash:string|null;records:Observation[];cursor:number;queue:number}) {
+  async function* encode(records:Observation[]): AsyncGenerator<{encoding:string;data:string}> {
+    const payload={encoding:"gzip-base64",data:await gzipText(JSON.stringify({...data,records}))};
+    // Reserve >1 KB for the lease, stable batch ID and request wrapper (limit:90 KB).
+    if(Buffer.byteLength(JSON.stringify(payload))<=88000) {yield payload;return;}
+    if(records.length===1) throw Error("ingestion observation exceeds request limit");
+    const middle=Math.ceil(records.length/2);
+    yield* encode(records.slice(0,middle)); yield* encode(records.slice(middle));
+  }
+  for(let start=0;start<data.records.length;start+=128) yield* encode(data.records.slice(start,start+128));
+}
 export interface PendingBatch { id: string; payload: unknown }
 export class DurableOutbox {
   private store: AtomicStore;

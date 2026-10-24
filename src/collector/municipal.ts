@@ -8,6 +8,10 @@ export interface AndamentoRow {
   municipality: string; totalSections: number; countedSections: number;
   electorate: number; countedElectorate: number; signature: string;
 }
+export function replaceConfiguredSections(target: Set<string>, uf: string, units: {id:string;generation:string}[]) {
+  for(const id of target) if(id.startsWith(`${uf.toLowerCase()}/`)) target.delete(id);
+  for(const unit of units) if(unit.generation.trim()) target.add(unit.id);
+}
 // The TSE publishes municipal partial totals during the night; this file says how far each municipality has gone.
 export function parseAndamento(raw: any, election: string): AndamentoRow[] {
   if (String(raw?.ele) !== election) throw Error("andamento identity mismatch");
@@ -52,8 +56,12 @@ export function estimateMunicipalObservations(o: {
   sections: SectionBase[]; partial: MunicipalPartial; real: Observation[]; previous: Observation[];
   totalized?: Set<string>; order: Map<string, number>; identity: ElectionIdentity; retrievedAt: string;
 }): Observation[] {
-  const version = Date.parse(o.partial.sourceTime), ids = new Set(o.sections.map(s => s.id));
-  if (!Number.isSafeInteger(version)) throw Error("invalid municipal source time");
+  const sourceVersion = Date.parse(o.partial.sourceTime), ids = new Set(o.sections.map(s => s.id));
+  if (!Number.isSafeInteger(sourceVersion)) throw Error("invalid municipal source time");
+  if(o.previous.some(p=>p.estimated && Date.parse(p.sourceTime)>sourceVersion)) return [];
+  // The signed partial can stay unchanged while real BUs alter its residual allocation.
+  let version=sourceVersion;
+  for(const previous of o.previous) if(previous.estimated) version=Math.max(version,previous.version+1);
   const real = o.real.filter(r => ids.has(r.id) && !r.estimated && r.status === "totalized"),
     realIds = new Set(real.map(r => r.id));
   const rank = (s: SectionBase) => o.order.get(s.id) ?? Number.MAX_SAFE_INTEGER,
@@ -69,7 +77,9 @@ export function estimateMunicipalObservations(o: {
   let capacity = o.sections.filter(s => chosen.has(s.id) && eligible(s)).reduce((n, s) => n + s.electorate!, 0);
   for (const s of byOrder)
     if (capacity < residualTotal && !chosen.has(s.id) && eligible(s)) { chosen.add(s.id); capacity += s.electorate!; }
-  const estimated = o.sections.filter(s => chosen.has(s.id) && eligible(s));
+  const inconsistent = (["a","b","blank","null"] as const).some(k=>real.reduce((n,r)=>n+r[k],0)>o.partial[k])
+    || real.some(r=>Date.parse(r.sourceTime)>sourceVersion);
+  const estimated = inconsistent ? [] : o.sections.filter(s => chosen.has(s.id) && eligible(s));
   const out: Observation[] = [];
   if (estimated.length && o.partial.countedSections > 0) {
     const residual = (k: "a" | "b" | "blank" | "null") => Math.max(0, o.partial[k] - real.reduce((n, r) => n + r[k], 0));

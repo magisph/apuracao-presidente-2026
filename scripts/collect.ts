@@ -17,11 +17,12 @@ import { municipalTerritories } from "../src/core/territories.ts";
 import { snapshotContent } from "../src/core/change.ts";
 import { readEvents } from "../src/collector/events.ts";
 import { gzipText, gunzipText } from "../src/core/codec.ts";
-import { estimateMunicipalObservations, loadReceiptOrder, parseAndamento, tseTime } from "../src/collector/municipal.ts";
+import { estimateMunicipalObservations, loadReceiptOrder, parseAndamento, tseTime, replaceConfiguredSections } from "../src/collector/municipal.ts";
+import type { AndamentoRow } from "../src/collector/municipal.ts";
 import { partitionUFs } from "../src/collector/partition.ts";
 import { publishMunicipalPages } from "../src/collector/publication.ts";
 import { isFatalCollectionError } from "../src/collector/failure.ts";
-import { DurableOutbox } from "../src/collector/outbox.ts";
+import { DurableOutbox, observationBatches } from "../src/collector/outbox.ts";
 import { collectionHealth } from "../src/collector/health.ts";
 import { projectHierarchy } from "../src/core/model.ts";
 import { verifyResourceHashes } from "../src/collector/provenance.ts";
@@ -253,11 +254,39 @@ for (const s of sections) {
 }
 const receiptOrder = shard === "coordinator" ? new Map<string, number>()
   : await loadReceiptOrder(process.env.ORDER_FILE ?? "config/ordem-1t-2026.json.gz", fullBase, baseHash);
-const municipalSeen = new Map<string, string>(), municipalQueue = new Map<string, string>(),
+const municipalSeen = new Map<string, string>(), municipalQueue = new Map<string, AndamentoRow>(),
+  municipalProgress = new Map<string, AndamentoRow>(),
   configuredTotalized = new Set<string>();
 const retryAt = new Map<string, number>();
 let lastCheckpoint = 0;
 const errors = new Set<string>();
+async function reconcileMunicipal(changed:Observation[]) {
+  for(const [key,progress] of [...municipalQueue].slice(0,200)) {
+    if(Date.now()>=stopAt) break;
+    await renew();
+    const [ufCode,municipality]=key.split('/'),uf=ufCode.toLowerCase(),
+      url=`${TSE}/ele2026/6258/dados/${uf}/${uf}${municipality}-c0001-e006258-u.json`;
+    try {
+      const official=parseOfficial(await client.official(url),IDENTITY,url.replace('.json','.jws'));
+      if(!official.sourceTime) throw Error('municipal source time missing');
+      if(official.countedSections!==progress.countedSections) throw Error('municipal result awaits andamento alignment');
+      const sourceTime=tseTime(official.sourceTime),sourceVersion=Date.parse(sourceTime);
+      const progressTime=progress.signature.split('|')[1];
+      if(progressTime?.trim() && sourceVersion<Date.parse(tseTime(progressTime)))
+        throw Error('municipal result predates andamento');
+      const units=municipalSections.get(key)!,records=units.map(s=>ledger.records.get(s.id)).filter((r):r is Observation=>!!r);
+      for(const observation of estimateMunicipalObservations({sections:units,real:records.filter(r=>!r.estimated),previous:records.filter(r=>r.estimated),
+        partial:{a:official.a,b:official.b,blank:official.blank,null:official.null,countedSections:official.countedSections,sourceTime},
+        totalized:configuredTotalized,order:receiptOrder,identity:IDENTITY,retrievedAt:new Date().toISOString()}))
+        if(applyObservation(observation)) changed.push(observation);
+      const real=records.filter(r=>!r.estimated && r.status==='totalized');
+      if(real.some(r=>Date.parse(r.sourceTime)>sourceVersion) || real.length>official.countedSections
+        || (['a','b','blank','null'] as const).some(k=>real.reduce((sum,r)=>sum+r[k],0)>official[k]))
+        throw Error('municipal partial awaits real BU alignment');
+      municipalSeen.set(key,progress.signature);municipalQueue.delete(key);errors.delete(`municipal:${key}`);
+    } catch(e) {errors.add(`municipal:${key}`);console.error(`Falha no parcial municipal ${key}: ${String(e)}`);}
+  }
+}
 let scannedAt = 0,
   lastBatch = 0;
 let running = true,
@@ -372,7 +401,7 @@ do {
           ++sequence,
           baseHash,
           base.length
-            ? "Coleta por seção; intervalo nominal sem calibração independente."
+            ? "BUs e parciais municipais; faixa provisória calibrada em 2022."
             : "Oficial disponível. Projeção bloqueada: base histórica ainda não importada.",
           denominators,
           fitted,
@@ -420,7 +449,7 @@ do {
           if (Object.values(groupHealth).some((g) => g.state !== "ok")) {
             snapshot.health.state = "stale";
             snapshot.health.message =
-              "Coleta por seção incompleta ou sem confirmação recente de todos os grupos. Resultado oficial permanece independente.";
+              "Coleta incompleta ou sem confirmação recente de todos os grupos. Resultado oficial permanece independente.";
           }
         }
         // Geographic official watermarks are independent; never synthesize section observations from EA20.
@@ -504,46 +533,31 @@ do {
             IDENTITY.election,
           )) {
             const key = `${ufCode}/${row.municipality}`;
-            if (row.countedSections > 0 && municipalSections.has(key) && municipalSeen.get(key) !== row.signature)
-              municipalQueue.set(key, row.signature);
+            municipalProgress.set(key,row);
+            if (municipalSections.has(key) && municipalSeen.get(key) !== row.signature
+              && (row.countedSections>0 || municipalSections.get(key)!.some(s=>ledger.records.get(s.id)?.estimated)))
+              municipalQueue.set(key, row);
           }
+          try {
           const inv = await client.official(
             `${TSE}/ele2026/arquivo-urna/${config.contest}/config/${uf}/${uf}-p${config.contest.padStart(6, "0")}-cs.json`,
           );
-          for (const unit of inventory(inv, config.contest))
-            if (unit.generation.trim()) configuredTotalized.add(unit.id);
+          replaceConfiguredSections(configuredTotalized,ufCode,inventory(inv,config.contest));
+          errors.delete(`inventory:${ufCode}`);
           for (const change of changedSections(inv, config.contest, known))
             if (sectionIds.has(change.id))
               pending.set(change.id, change.generation);
+          } catch(e) {
+            replaceConfiguredSections(configuredTotalized,ufCode,[]);
+            errors.add(`inventory:${ufCode}`);
+            console.error(`Inventário ${ufCode} indisponível; mantendo coleta municipal: ${String(e)}`);
+          }
         }
         scannedAt = Date.now();
       }
       const changed: Observation[] = [];
-      for (const [key, signature] of [...municipalQueue].slice(0, 200)) {
-        if (Date.now() >= stopAt) break;
-        await renew();
-        const [ufCode, municipality] = key.split("/"), uf = ufCode.toLowerCase(),
-          url = `${TSE}/ele2026/6258/dados/${uf}/${uf}${municipality}-c0001-e006258-u.json`;
-        try {
-          const official = parseOfficial(await client.official(url), IDENTITY, url.replace(".json", ".jws"));
-          if (!official.sourceTime) throw Error("municipal source time missing");
-          const units = municipalSections.get(key)!,
-            records = units.map((s) => ledger.records.get(s.id)).filter((r): r is Observation => !!r);
-          for (const o of estimateMunicipalObservations({
-            sections: units, real: records.filter((r) => !r.estimated), previous: records.filter((r) => r.estimated),
-            partial: { a: official.a, b: official.b, blank: official.blank, null: official.null,
-              countedSections: official.countedSections, sourceTime: tseTime(official.sourceTime) },
-            totalized: configuredTotalized, order: receiptOrder, identity: IDENTITY, retrievedAt: new Date().toISOString(),
-          }))
-            if (applyObservation(o)) changed.push(o);
-          municipalSeen.set(key, signature);
-          municipalQueue.delete(key);
-          errors.delete(`municipal:${key}`);
-        } catch (e) {
-          errors.add(`municipal:${key}`);
-          console.error(`Falha no parcial municipal ${key}: ${String(e)}`);
-        }
-      }
+      await reconcileMunicipal(changed);
+      let realChanged=false;
       const slice = [...pending]
           .filter(([id]) => Date.now() >= (retryAt.get(id) ?? 0))
           .slice(0, 128);
@@ -564,7 +578,11 @@ do {
               o.status !== old.status ||
               o.version !== old.version
             ) {
-              if (applyObservation(o)) changed.push(o);
+              if (applyObservation(o)) {
+                changed.push(o);realChanged=true;
+                const key=`${id.slice(0,2).toUpperCase()}/${id.split('/')[1]}`, progress=municipalProgress.get(key);
+                if(progress) municipalQueue.set(key,progress);
+              }
             }
             if (sourceAdvanced(old, o) && !ledger.quarantined.has(id)) {
               known.set(id, generation);
@@ -584,19 +602,12 @@ do {
           console.error(`Falha na coleta ${id}: ${String(e)}`);
         }
       }
+      if(realChanged) await reconcileMunicipal(changed);
       cursor += slice.length;
       if (endpoint && changed.length) {
-        try { await outbox!.stage({
-            encoding: "gzip-base64",
-            data: await gzipText(
-              JSON.stringify({
-                baseHash,
-                records: changed,
-                cursor,
-                queue: pending.size,
-              }),
-            ),
-        }); } catch (e) { throw Error(`ingestion outbox persistence: ${String(e)}`); }
+        try {for await(const payload of observationBatches({baseHash,records:changed,cursor,queue:pending.size+municipalQueue.size}))
+          await outbox!.stage(payload);
+        } catch (e) { throw Error(`ingestion outbox persistence: ${String(e)}`); }
         if (!(await deliverPending())) continue;
       }
       const sourceState =
@@ -604,7 +615,7 @@ do {
       if (endpoint && Date.now() - lastBatch > 60000) {
         await post("/ingest/heartbeat", {
           lease,
-          queue: pending.size,
+          queue: pending.size+municipalQueue.size,
           state: sourceState,
         });
         lastBatch = Date.now();
@@ -621,7 +632,7 @@ do {
         );
       await new AtomicStore(`data/health-${shard}.json`).write({
         checkedAt: new Date().toISOString(),
-        queue: pending.size,
+        queue: pending.size+municipalQueue.size,
         state: sourceState,
       });
     }

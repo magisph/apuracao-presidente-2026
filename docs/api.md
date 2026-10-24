@@ -38,3 +38,7 @@ Snapshot repetido com hash igual é idempotente; identidade repetida com conteú
 ## BUs e versões
 
 `Observation.status`: `received`, `totalized` ou `excluded`. Apenas `totalized` contribui para o motor. `version` deriva do horário de geração do EA18, não da ordem de chegada HTTP. Hash identifica a versão referenciada no auxiliar, não é declarado SHA do arquivo BU. Conflitos na mesma versão retiram a seção do universo observado até uma versão posterior inequívoca. Correções substituem; exclusões retiram; payload malformado não vira voto zero.
+
+No fallback municipal, `estimated:true` identifica uma alocação do parcial oficial entre seções, e `sourceTime` mantém o relógio do parcial assinado. A versão derivada pode avançar quando um BU real altera a alocação residual sem modificar esse relógio. BUs reais sempre prevalecem sobre estimativas, independentemente de seus números de versão. A observação estimada não comprova a leitura do BU. `health.estimatedSections` contabiliza essas observações no snapshot.
+
+Atualizações municipais são divididas em lotes duráveis de até 128 registros e subdivididas se o payload comprimido superar 88.000 bytes, reservando espaço para o envelope autenticado de até 90.000 bytes. Fragmentos mantêm suas identidades idempotentes na outbox até confirmação.
