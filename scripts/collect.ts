@@ -18,6 +18,7 @@ import { snapshotContent } from "../src/core/change.ts";
 import { readEvents } from "../src/collector/events.ts";
 import { gzipText, gunzipText } from "../src/core/codec.ts";
 import { partitionUFs } from "../src/collector/partition.ts";
+import { publishMunicipalPages } from "../src/collector/publication.ts";
 import { DurableOutbox } from "../src/collector/outbox.ts";
 import { collectionHealth } from "../src/collector/health.ts";
 import { projectHierarchy } from "../src/core/model.ts";
@@ -434,28 +435,19 @@ do {
             municipalities,
           );
           if (endpoint) {
-            snapshot.municipalityPages = [];
-            for (const [uf] of STATES) {
-              const rows = municipalities.filter((t) => t.parent === uf);
-              const manifest = {
-                uf,
-                pages: Math.ceil(rows.length / 100),
-                hashes: [] as string[],
-              };
-              if (rows.length) snapshot.municipalityPages.push(manifest);
-              for (let page = 0; page * 100 < rows.length; page++) {
+            snapshot.municipalityPages = await publishMunicipalPages(
+              municipalities,
+              STATES.map(([uf]) => uf),
+              async (page) => {
                 await renew();
-                const result = await post("/ingest/territories", {
+                return post("/ingest/territories", {
                   lease,
                   sequence,
-                  uf,
-                  page,
-                  territories: rows.slice(page * 100, (page + 1) * 100),
+                  ...page,
                   contentAddressed: true,
                 });
-                manifest.hashes.push(result.hash);
-              }
-            }
+              },
+            );
             await post("/ingest/snapshot", { lease, snapshot });
           }
           await new AtomicStore("data/latest.json").write(snapshot);

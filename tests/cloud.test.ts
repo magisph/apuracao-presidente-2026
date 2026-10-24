@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
 import worker from "../worker/index.ts";
 import { makeDemo } from "../src/core/demo.ts";
+import { publishMunicipalPages } from "../src/collector/publication.ts";
 function env() {
   const db = new DatabaseSync(":memory:");
   db.exec(
@@ -329,4 +330,32 @@ test("content-addressed pages are compressed once and referenced by multiple imm
     e,
   );
   assert.equal(((await result.json()) as any[])[0].name, "Porto Walter");
+});
+test("concurrent content-addressed pages publish atomically and fenced lease blocks snapshot", async () => {
+  const e = env(), post = async (path: string, body: unknown) => worker.fetch(request(path, body), e);
+  const lease = (await (await post("/ingest/lease", { shard: "coordinator", owner: "one" })).json()) as any;
+  const s = makeDemo(1)[0];
+  s.mode = "live";
+  const towns = Array.from({ length: 250 }, (_, i) => ({ code: `AC/${String(i).padStart(5, "0")}`, parent: "AC",
+    name: `Town ${i}`, region: "Norte", projection: s.projection }));
+  const send = (l: any) => async (p: any) => {
+    const r = await post("/ingest/territories", { lease: l, sequence: s.sequence, ...p, contentAddressed: true });
+    if (!r.ok) throw Error(`ingestion /ingest/territories: ${r.status}`);
+    return (await r.json()) as { hash: string };
+  };
+  s.municipalityPages = await publishMunicipalPages(towns, ["AC"], send(lease));
+  assert.equal(s.municipalityPages[0].hashes!.length, 3);
+  assert.equal((await post("/ingest/snapshot", { lease, snapshot: s })).status, 201);
+  const pages = await (await worker.fetch(request(`/api/municipalities?uf=AC&sequence=${s.sequence}`), e)).json() as any[];
+  assert.equal(pages.length, 250);
+  // A newer owner fences the old coordinator in the middle of the next publication.
+  const next = makeDemo(2)[1];
+  next.mode = "live";
+  await e.DB.prepare("UPDATE leases SET expires=0").run();
+  assert.equal((await post("/ingest/lease", { shard: "coordinator", owner: "two" })).status, 200);
+  await assert.rejects(publishMunicipalPages(towns.map(t => ({ ...t, name: `${t.name}*` })), ["AC"],
+    async p => send(lease)({ ...p, sequence: next.sequence })), /409/);
+  next.municipalityPages = [{ uf: "AC", pages: 3, hashes: s.municipalityPages[0].hashes }];
+  assert.equal((await post("/ingest/snapshot", { lease, snapshot: next })).status, 409);
+  assert.equal(((await (await worker.fetch(request("/api/latest"), e)).json()) as any).id, s.id);
 });
