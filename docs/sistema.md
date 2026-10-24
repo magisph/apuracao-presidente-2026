@@ -6,7 +6,7 @@ Interface própria inspirada na leitura visual de ElectoMaps e EleiçãoBR: fund
 
 Coleta: EA20 nacional/UF, EA16 para inventário, EA18 para versões e BU binário. `da/ha` não comprova totalização. Versões com estado ambíguo ficam fora do motor. Histórico é agrupado pela seção principal e suas agregadas, com correspondência explícita. Exterior é estrato próprio. Nunca escalar BU para forçar igualdade com EA20.
 
-Nuvem preparada: GitHub Actions mantém processos limitados em duração, com checkpoints persistidos por endpoint autenticado; Cloudflare Worker/D1 publica snapshots atômicos. Cinco grupos de UFs, 15 requisições/s cada, coordenador até 5; total máximo 80. Chaves somente em secrets. Não pressupor IPs distintos ou continuidade garantida pelo agendador.
+Nuvem publicada e em operação desde 24/10/2026 (ver [nuvem.md](nuvem.md)): GitHub Actions mantém processos limitados em duração, supervisionados para reinício dentro do ciclo, com checkpoints persistidos por endpoint autenticado; Cloudflare Worker/D1 publica snapshots atômicos. Cinco grupos de UFs, 15 requisições/s cada, coordenador até 5; total máximo 80. Chaves somente em secrets. Não pressupor IPs distintos ou continuidade garantida pelo agendador.
 
 Gates para uso eleitoral: identidade do pleito de 2T confirmada por configuração oficial; inventário completo de seções; base 1T e correspondências validadas; decoder validado contra BUs oficiais; replay temporal real sem vazamento; cobertura/erro calibrados em holdouts; carga/quota/reinício na nuvem verificados. Até isso, selo de vencedor indisponível e intervalos apenas nominais.
 

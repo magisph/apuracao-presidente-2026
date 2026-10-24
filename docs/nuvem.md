@@ -33,11 +33,21 @@ Projeções são publicadas nominalmente a cada 90 s; EA20 nacional/heartbeat a 
 
 Actions não garante disponibilidade contínua: filas e retomada de leases podem produzir lacunas. O diagnóstico sinaliza atrasos; nunca apresentar o relógio de transporte como se fosse atualização dos votos. Artefatos limitados a outbox/saúde por 2 dias, sem repetir a base ou o ledger inteiro em cada execução.
 
-Estimativa local: cerca de 273 MB de dados, 71 mil escritas D1 e 74 mil requisições dinâmicas/dia para o cenário descrito em `data/storage-budget.json`. Quotas são compartilhadas com a conta e dependem de uso, correções, retries e público. O D1 após os ensaios ocupava menos de 1 MB; isso é pré-apuração, não ensaio completo de carga.
+Estimativa local anterior: cerca de 273 MB de dados, 71 mil escritas D1 e 74 mil requisições dinâmicas/dia para o cenário descrito em `data/storage-budget.json`.
 
-**Não verificado:** desligamento físico deste PC e comportamento sob o pico completo de BUs. A execução efetiva em runners remotos foi comprovada. Precisão nacional/cobertura95% continuam bloqueadas; vencedor estatístico e probabilidade numérica permanecem desabilitados.
+**Medido em 24/10 (tarde), `wrangler d1 info`, janela de 24 h:** produção 2.685 linhas escritas e 14.386 lidas em cerca de 2,5 h de operação pré-apuração (heartbeats e leases, ≈1.100 escritas/h); D1 de ensaio 16.021 escritas após o pico nacional completo; o outro banco da conta, 0 escritas. Uma publicação completa (71 páginas, blobs, snapshot) custa cerca de 134 linhas; um lote de BUs, cerca de 3,8.
+
+**Projeção para o dia UTC 25/10:** ≈26 mil (heartbeats/leases) + ≤21 mil (até 160 publicações entre 20:00 e 23:59 UTC) + 16–20 mil (lotes) ≈ 63–67 mil linhas, abaixo do limiar de decisão de 70 mil e do limite de 100 mil. Decisão: manter publicação a cada 90 s. O reset às 00:00 UTC (21h de Brasília) divide a noite eleitoral. Se a cota se esgotar, as escritas falham com 5xx; desde esta rodada os coletores não terminam por isso — recuam com backoff, preservam lotes na outbox e retomam após o reset.
+
+**Pico nacional verificado em ambiente isolado (24/10, run `peak-1792863040184`):** mesmo código do Worker em `apuracao-presidente-2026-peak-20261024`; 499.248 registros em 3.902 lotes (1.472 registros/s), recuperação nacional em 42 s com totais iguais, 800 leituras concorrentes, todas as respostas 2xx. Publicação municipal concorrente (4 páginas): 11,9 s a 10% e 11,3 s a 100%, contra 89,7 s e 35,9 s no envio sequencial. Nenhum dado sintético foi enviado à produção.
+
+**Não verificado:** desligamento físico deste PC (fora de escopo por decisão do usuário) e o pico real de 25/10. A execução efetiva em runners remotos foi comprovada. Precisão nacional/cobertura95% continuam bloqueadas; vencedor estatístico e probabilidade numérica permanecem desabilitados.
 
 ## Operação e nova publicação
+
+Cada job executa `npm run collect:supervised`: se o coletor terminar com erro, o supervisor o reinicia em 30 s com o tempo restante do ciclo; saída normal (prazo) encerra. Respostas 5xx/429 do Worker e falhas de rede não encerram mais o processo (backoff até 60 s); 4xx, cercamento de lease e divergência de base continuam fatais.
+
+**Realinhamento em 25/10:** a troca de ciclo natural cairia por volta de 17h25 de Brasília. Às 15h15 de Brasília cancelar o run em andamento; se o job de continuação disparar um novo run de 345 min, usá-lo; senão disparar manualmente. O ciclo resultante cobre aproximadamente 15h20–21h05 de Brasília.
 
 Consultar o workflow Coleta eleitoral para estado dos jobs. Para iniciar outra janela: `workflow_dispatch`, duração 345 min, continuação ligada e prazo futuro explícito. Para encerrar a operação: desabilitar o workflow Coleta eleitoral e cancelar as execuções ativas. A variable `CHAIN_ENABLED=false` vale para execuções que carregarem a nova configuração; uma execução já iniciada pode manter o valor anterior e disparar mais um ciclo. O prazo absoluto continua obrigatório.
 

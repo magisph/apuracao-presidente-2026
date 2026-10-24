@@ -2,6 +2,8 @@
 
 > **ATUALIZAÇÃO FINAL — INTERRUPÇÃO SOLICITADA:** em **24/10/2026 às 12h42min24s de Brasília**, os três processos locais de ensaio foram encerrados a pedido do usuário. Foi conferida a ausência de processos remanescentes desses scripts. A coleta de produção no GitHub Actions não foi cancelada. As referências a trabalhos “em andamento” no corpo abaixo descrevem o checkpoint anterior; o estado final e a retomada estão na seção 18.
 
+> **ATUALIZAÇÃO 24/10, TARDE:** pendências retomadas e concluídas conforme a seção 19 (publicação concorrente, resiliência, teste real ponta a ponta, pico nacional isolado e holdout nacional de 2022).
+
 **Data de referência:** 24/10/2026. Última consulta à saúde da produção neste relatório: **12h39min45s de Brasília**, correspondente a `2026-10-24T15:39:45.057Z`.
 
 **Natureza:** relatório técnico e operacional, elaborado com leitura do código, configurações, documentação e logs. Os ensaios de pico e a avaliação histórica nacional permaneciam em execução durante sua elaboração. Resultados parciais não representam aprovação final.
@@ -304,3 +306,28 @@ Mudanças locais desta rodada ainda não publicadas: os scripts `scripts/peak.ts
 5. Concluir medições remotas e avaliação histórica antes de afirmar carga aprovada ou precisão calibrada. Atualizar relatório, manifesto e documentação; revisar/publicar somente as alterações verificadas.
 
 **Estado final válido:** trabalhos locais interrompidos e preservados; produção mantida; pico parcialmente exercitado em escala nacional; correção de publicação e validação estatística ainda pendentes. Desligamento físico continua fora do escopo por decisão do usuário.
+
+## 19. Retomada e conclusão das pendências — 24/10/2026, tarde
+
+Executado conforme plano aprovado pelo usuário, no branch `pendencias-eleicao-2t`. Modelo inalterado (`modelHash` `5ae9c873…02ae3`); vencedor estatístico continua `null`.
+
+### Correções no fluxo produtivo
+
+- **Publicação municipal concorrente** (`src/collector/publication.ts`): até 4 páginas em voo, manifesto na ordem das UFs e hashes por índice de página; na primeira falha, nenhuma página nova é despachada e o snapshot não é enviado. O Worker não mudou: o caminho endereçado por conteúdo já era idempotente.
+- **Resiliência** (`src/collector/failure.ts`, `scripts/supervise.ts`): antes, qualquer resposta não 2xx do Worker encerrava o shard até o fim do ciclo (até 6 h). Agora 5xx, 429 e falhas de rede recuam com backoff (até 60 s); 4xx, cercamento de lease e divergência de base continuam fatais. O supervisor reinicia o coletor encerrado com erro, em 30 s, com o tempo restante do ciclo.
+- **Transporte compartilhado** (`fetchAuxiliary`/`downloadBU` em `src/collector/tse.ts`), usado pela coleta e pelo teste real; a política de `collectSection` permaneceu igual.
+
+### Evidências
+
+| Verificação | Resultado |
+|---|---|
+| Teste real ponta a ponta (AC, 1º turno de 2026) | 2.270/2.270 BUs, 0 falhas; votos de 13, 22, brancos, nulos e seções idênticos ao EA20 assinado; 23 nulos técnicos explicados; round trip no Worker isolado íntegro. |
+| Pico nacional isolado (retomada a partir dos 4 snapshots) | 499.248 registros, 3.902 lotes, 1.472 registros/s; recuperação 42 s com totais iguais; 800 leituras concorrentes; 100% respostas 2xx. Publicação 11,9 s (10%) e 11,3 s (100%), antes 89,7 s e 35,9 s. Decodificação BER do universo: 290–365 s em um processo. |
+| Holdout nacional 2022 | 28 UFs/exterior, 472.028 eventos, 0 rejeições. Erro 0,47 pp a 1%, 0,19 pp a 5%, 0,11 pp a 20%, 0,03 pp a 50%. Faixa nominal cobriu sempre, mas com largura de 15–17 pp até 20%. |
+| Orçamento D1 medido | Produção ≈1.100 escritas/h em pré-apuração; publicação ≈134 linhas; lote ≈3,8. Projeção 25/10 UTC: 63–67 mil de 100 mil. Intervalo de 90 s mantido. |
+
+### Achados que permanecem
+
+1. A faixa nominal de 95% é conservadora demais (±7–8 pp no início da apuração). Não foi recalibrada: alterar o modelo na véspera, sem validação entre eleições, aumentaria o risco.
+2. Margem de cota D1 de cerca de 33 mil linhas no dia UTC 25/10. Se for excedida, as escritas param até 00:00 UTC (21h de Brasília); os coletores sobrevivem e retomam.
+3. A troca natural de ciclo cairia por volta de 17h25 de Brasília em 25/10; o realinhamento planejado para 15h15 de Brasília a evita.
