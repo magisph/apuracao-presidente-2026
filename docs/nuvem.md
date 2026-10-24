@@ -39,7 +39,7 @@ Estimativa local: cerca de 273 MB de dados, 71 mil escritas D1 e 74 mil requisi�
 
 ## Operação e nova publicação
 
-Consultar o workflow Coleta eleitoral para estado dos jobs. Para iniciar outra janela: `workflow_dispatch`, duração 345 min, continuação ligada e prazo futuro explícito. Para encerrar o encadeamento: variable `CHAIN_ENABLED=false`; uma execução já iniciada continua até seu limite ou cancelamento explícito.
+Consultar o workflow Coleta eleitoral para estado dos jobs. Para iniciar outra janela: `workflow_dispatch`, duração 345 min, continuação ligada e prazo futuro explícito. Para encerrar a operação: desabilitar o workflow Coleta eleitoral e cancelar as execuções ativas. A variable `CHAIN_ENABLED=false` vale para execuções que carregarem a nova configuração; uma execução já iniciada pode manter o valor anterior e disparar mais um ciclo. O prazo absoluto continua obrigatório.
 
 Nova versão: `npm ci --ignore-scripts`, `npm test`, `npm run build`, `npx wrangler@4.152.0 deploy --config worker/wrangler.toml --dry-run`, revisão do alvo e então o mesmo comando sem `--dry-run`. CLI deve estar autenticada na conta configurada. Nunca colocar credenciais no frontend ou no TOML.
 

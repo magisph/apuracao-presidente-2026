@@ -26,3 +26,5 @@ Gates remanescentes: calibração nacional/95%, pico eleitoral completo e deslig
 
 Verificação final do limite: fetchBeforeDeadline cancela HTTP no prazo, preservando os sinais individuais. Teste RED→GREEN e suíte59/59. CI40106658863 (38e0fd7) aprovado. Execução com prazo já vencido encerrou antes de consultas/fontes. UI de diagnóstico atualizada para orientar consulta aos grupos, removendo o aviso histórico de nuvem não implantada.
 Worker final com assets: versão8d7a7095-bb74-409f-aeeb-35bb211d9a4a. Após republicação, ingestão autenticada200, histórico3 versões,645municípios SP descomprimidos/validados,health ok e5grupos ok. Fonte oficial0votos e0BUs observados, sem confundir persistência de teste com voto real.
+
+Ajuste operacional final: variáveis de repositório podem ficar capturadas na execução em andamento. Encerramento imediato exige desabilitar o workflow/cancelar os jobs; apenas trocar CHAIN_ENABLED pode permitir mais um ciclo. Reinício final será disparado explicitamente com CHAIN_ENABLED=true e a revisão final publicada.
