@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { createHash, randomBytes } from "node:crypto";
 import { SectionLedger } from "../src/core/ledger.ts";
-import { IDENTITY } from "../src/core/demo.ts";
+import { IDENTITY, STATES } from "../src/core/demo.ts";
+import { publishMunicipalPages } from "../src/collector/publication.ts";
 import { partitionUFs } from "../src/collector/partition.ts";
 import { projectHierarchy } from "../src/core/model.ts";
 import { municipalTerritories } from "../src/core/territories.ts";
@@ -17,7 +18,10 @@ if (endpoint && !/^https:\/\/apuracao-presidente-2026-peak-20261024\.phdtemirand
 const token = endpoint ? (await readFile("data/peak-secret.txt", "utf8")).trim() : "";
 const raw = await readFile("data/base.json", "utf8"), loaded = JSON.parse(raw),
   base = loaded.sections as SectionBase[], baseHash = createHash("sha256").update(raw).digest("hex");
-const runId = `peak-${Date.now()}`, owner = runId;
+const runId = `peak-${Date.now()}`, owner = runId, resume = process.env.PEAK_RESUME === "1";
+const fractions = (process.env.PEAK_FRACTIONS ?? "0.01,0.1,0.5,1").split(",").map(Number);
+if (!fractions.length || fractions.some((f, i) => !(f > 0 && f <= 1) || (i && f <= fractions[i - 1])))
+  throw Error("PEAK_FRACTIONS must be increasing values in (0, 1]");
 const report: any = { runId, startedAt: new Date().toISOString(), kind: "synthetic-national-peak-on-real-geography",
   independentPrecisionValidation: false, endpoint: endpoint ?? "local", productionWrites: 0, units: base.length,
   modelHash: createHash("sha256").update(await readFile("src/core/model.ts")).digest("hex"),
@@ -81,16 +85,12 @@ async function publish(fraction: number) {
     requestMaxBytes: 0 };
   assert.ok(publication.aggregateDifferenceA < .01);
   if (endpoint) {
-    const started = performance.now(); snapshot.municipalityPages = [];
-    for (const uf of new Set(towns.map(t => t.parent!))) {
-      const rows = towns.filter(t => t.parent === uf), hashes: string[] = [];
-      for (let i = 0; i < rows.length; i += 100) {
-        const data = { sequence, uf, page: i / 100, contentAddressed: true, territories: rows.slice(i, i + 100) };
-        publication.requestMaxBytes = Math.max(publication.requestMaxBytes, Buffer.byteLength(JSON.stringify({ lease: leases.get("coordinator"), ...data })));
-        hashes.push((await post("/ingest/territories", "coordinator", data)).hash);
-      }
-      snapshot.municipalityPages.push({ uf, pages: hashes.length, hashes });
-    }
+    const started = performance.now();
+    snapshot.municipalityPages = await publishMunicipalPages(towns, STATES.map(([uf]) => uf), page => {
+      const data = { sequence, ...page, contentAddressed: true };
+      publication.requestMaxBytes = Math.max(publication.requestMaxBytes, Buffer.byteLength(JSON.stringify({ lease: leases.get("coordinator"), ...data })));
+      return post("/ingest/territories", "coordinator", data);
+    });
     await post("/ingest/snapshot", "coordinator", { snapshot });
     const fetched = await http("/api/latest");
     assert.equal(fetched.id, snapshot.id); assert.equal(fetched.projection.a, snapshot.projection.a);
@@ -106,14 +106,18 @@ async function publish(fraction: number) {
 try {
   await mkdir("data", { recursive: true });
   if (endpoint) {
-    // New isolated database only. Never overwrite an earlier test run.
-    assert.equal((await http("/ingest/sequence")).sequence, 0);
+    // New isolated database, or an explicit resume after the four interrupted publications. Never overwrite a run.
+    const remote = (await http("/ingest/sequence")).sequence;
+    assert.equal(remote, resume ? 4 : 0);
+    sequence = remote; report.resumedFromSequence = resume ? remote : null;
     await renew("coordinator");
   }
-  for (const fraction of [.01, .1, .5, 1]) await publish(fraction);
-  assert.equal(ledger.records.size, base.length);
-  const expectedA = all.filter((_, i) => base[i].matched && base[i].firstValid > 0).reduce((n, o) => n + o.a, 0);
-  assert.equal(lastSnapshot!.projection.a, expectedA);
+  for (const fraction of fractions) await publish(fraction);
+  if (fractions.at(-1) === 1) {
+    assert.equal(ledger.records.size, base.length);
+    const expectedA = all.filter((_, i) => base[i].matched && base[i].firstValid > 0).reduce((n, o) => n + o.a, 0);
+    assert.equal(lastSnapshot!.projection.a, expectedA);
+  }
   const decodeStart = performance.now(), bytes = new Uint8Array(await readFile("tests/fixtures/ac-01066-0004-0077-bu.dat"));
   for (let i = 0; i < base.length; i++) {
     const decoded = decodePresidentialBU(bytes, 6257, 1, 13, 22);
@@ -140,6 +144,7 @@ try {
     for (;;) {
       const page = await http(`/ingest/batches?shard=all&after=${after}`);
       for (const b of page) {
+        if (!b.id.startsWith(`${runId}-`)) continue; // other runs, such as the real-data e2e check
         const payload = JSON.parse(await gunzipText(b.payload.data));
         assert.equal(payload.baseHash, baseHash);
         for (const record of payload.records) recovered.apply(record);
