@@ -10,7 +10,7 @@ const exec=promisify(execFile);
 const collector=new URL("../scripts/collect.ts",import.meta.url).href;
 const http=new URL("../src/collector/http.ts",import.meta.url).href;
 const fixture=JSON.parse(await readFile(new URL("./fixtures/ea20-2026-2t-before.json",import.meta.url),"utf8"));
-async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once?:boolean;snapshotFailures?:number;snapshotError?:string;minutes?:string}={}) {
+async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once?:boolean;snapshotFailures?:number;snapshotError?:string;minutes?:string;andamento?:unknown;municipal?:unknown}={}) {
   const once=o.once??true, failures=o.snapshotFailures??1e9;
   const script=`
     import fs from 'node:fs/promises';
@@ -20,6 +20,8 @@ async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once
     ReliableClient.prototype.official=async function(url) {
       if(url.includes('ele-c.json')) return {pl:[{c:'ele2026',cd:'3221',dt:'25/10/2026',e:[{cd:'6258',t:'2',abr:[{cp:[{cd:'1'}]}]}]}]};
       if(url.includes('-cs.json')) return {cdp:'3221',abr:[]};
+      if(url.includes('-e006258-ab.json') && ${JSON.stringify(o.andamento ?? null)}) return ${JSON.stringify(o.andamento ?? null)};
+      if(url.includes('01066-c0001-e006258-u.json') &&${JSON.stringify(o.municipal ?? null)}) return ${JSON.stringify(o.municipal ?? null)};
       return ${JSON.stringify(fixture)};
     };
     globalThis.fetch=async function(url,init) {
@@ -116,5 +118,24 @@ test("coordinator republishes on a later loop after a transient snapshot failure
     await run(dir,"coordinator",false,503,{once:false,snapshotFailures:1,minutes:"0.4"});
     const s=JSON.parse(await readFile(join(dir,"published.json"),"utf8"));
     assert.ok(s.sequence>=2,`sequence=${s.sequence}`);
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
+test("group turns a municipal partial into estimated observations when no BU is available",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"vertice-municipal-flow-"));
+  try {
+    await mkdir(join(dir,"data"));
+    const ids=["ac/01066/0001/0001","ac/01066/0001/0002"];
+    const base=JSON.stringify({sections:ids.map(id=>({id,uf:"AC",region:"Norte",municipality:"01066",name:"Test",capital:false,electorate:300,firstA:100,firstB:100,firstOther:40,firstValid:240,members:[id],matched:true})),manifest:{complete:true}});
+    await writeFile(join(dir,"data/base.json"),base);
+    const andamento={ele:"6258",t:"2",abr:[{tpabr:"mun",cdabr:"01066",dt:"25/10/2026",ht:"17:40:00",and:"n",s:{ts:"2",st:"1"},e:{te:"600",est:"300"}}]};
+    const municipal={ele:"6258",t:"2",dv:"s",tf:"n",dg:"25/10/2026",hg:"17:40:05",carg:[{cd:"0001",agr:[{par:[{cand:[{n:"13",vap:"120",nmu:"A"},{n:"22",vap:"90",nmu:"B"}]}]}]}],
+      v:{vvc:"210",vb:"6",vn:"4"},s:{ts:"2",st:"1"},e:{te:"600",est:"300"}};
+    await run(dir,"g0",false,201,{andamento,municipal});
+    const attempts=(await readFile(join(dir,"attempts.ndjson"),"utf8")).trim().split("\n").map(x=>JSON.parse(x));
+    const {gunzipText}=await import("../src/core/codec.ts");
+    const records=JSON.parse(await gunzipText(attempts[0].payload.data)).records;
+    assert.equal(records.length,1);
+    assert.equal(records[0].estimated,true);
+    assert.deepEqual([records[0].a,records[0].b,records[0].blank,records[0].null],[120,90,6,4]);
   } finally { await rm(dir,{recursive:true,force:true}); }
 });

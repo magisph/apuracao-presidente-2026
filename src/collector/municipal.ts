@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { gunzipSync } from "node:zlib";
 import type { ElectionIdentity, Observation, SectionBase } from "../core/types.ts";
 
 export interface MunicipalPartial { a: number; b: number; blank: number; null: number; countedSections: number; sourceTime: string }
@@ -93,4 +95,15 @@ export function estimateMunicipalObservations(o: {
     if (ids.has(p.id) && p.estimated && p.status === "totalized" && !kept.has(p.id) && !realIds.has(p.id) && version > p.version)
       out.push({ ...p, version, status: "excluded", hash: `est-withdrawn-${p.hash}`, sourceTime: o.partial.sourceTime, retrievedAt: o.retrievedAt });
   return out;
+}
+// First-round receipt order aligned with the frozen base; a mismatched or missing file degrades to id order.
+export async function loadReceiptOrder(path: string, base: SectionBase[], baseHash: string | null) {
+  try {
+    const data = JSON.parse(gunzipSync(await readFile(path)).toString("utf8"));
+    if (data.baseSha256 !== baseHash || data.receipts?.length !== base.length) throw Error("receipt order does not match base");
+    return new Map(base.map((s, i) => [s.id, data.receipts[i] as number]).filter(([, t]) => (t as number) >= 0) as [string, number][]);
+  } catch (e) {
+    console.error(`Ordem do 1º turno indisponível; usando ordem por identificador: ${String(e)}`);
+    return new Map<string, number>();
+  }
 }

@@ -118,6 +118,7 @@ export interface Snapshot {
     unmatchedSections?: number;
     unknownElectorateSections?: number;
     electorateDifferences?: number;
+    estimatedSections?: number;
     groups?: Record<
       string,
       {

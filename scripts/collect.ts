@@ -17,6 +17,7 @@ import { municipalTerritories } from "../src/core/territories.ts";
 import { snapshotContent } from "../src/core/change.ts";
 import { readEvents } from "../src/collector/events.ts";
 import { gzipText, gunzipText } from "../src/core/codec.ts";
+import { estimateMunicipalObservations, loadReceiptOrder, parseAndamento, tseTime } from "../src/collector/municipal.ts";
 import { partitionUFs } from "../src/collector/partition.ts";
 import { publishMunicipalPages } from "../src/collector/publication.ts";
 import { isFatalCollectionError } from "../src/collector/failure.ts";
@@ -72,7 +73,7 @@ if (shard !== "coordinator" && !base.length)
   throw Error(
     "Bloqueado: importar base histórica e correspondências antes de coletar BUs",
   );
-const bins = partitionUFs(base);
+const bins = partitionUFs(base), fullBase = base;
 if (shard !== "coordinator") {
   const owned = new Set(bins[Number(shard.slice(1))].ufs);
   base = base.filter((s) => owned.has(s.uf));
@@ -243,6 +244,17 @@ const sectionIds = new Set(sections.map((s) => s.id)),
     [...ledger.records].map(([id, o]) => [id, o.inventoryGeneration ?? ""]),
   );
 const pending = new Map<string, string>();
+// Municipal fallback: partial municipal totals cover the night even if per-section BUs are published late.
+const municipalSections = new Map<string, SectionBase[]>();
+for (const s of sections) {
+  const key = `${s.uf}/${s.municipality}`;
+  if (!municipalSections.has(key)) municipalSections.set(key, []);
+  municipalSections.get(key)!.push(s);
+}
+const receiptOrder = shard === "coordinator" ? new Map<string, number>()
+  : await loadReceiptOrder(process.env.ORDER_FILE ?? "config/ordem-1t-2026.json.gz", fullBase, baseHash);
+const municipalSeen = new Map<string, string>(), municipalQueue = new Map<string, string>(),
+  configuredTotalized = new Set<string>();
 const retryAt = new Map<string, number>();
 let lastCheckpoint = 0;
 const errors = new Set<string>();
@@ -486,27 +498,61 @@ do {
           if(Date.now()>=stopAt) break;
           await renew();
           const uf = ufCode.toLowerCase();
-          await client.official(
-            `${TSE}/ele2026/6258/dados/${uf}/${uf}-e006258-ab.json`,
-          );
+          for (const row of parseAndamento(
+            await client.official(`${TSE}/ele2026/6258/dados/${uf}/${uf}-e006258-ab.json`),
+            IDENTITY.election,
+          )) {
+            const key = `${ufCode}/${row.municipality}`;
+            if (row.countedSections > 0 && municipalSections.has(key) && municipalSeen.get(key) !== row.signature)
+              municipalQueue.set(key, row.signature);
+          }
           const inv = await client.official(
             `${TSE}/ele2026/arquivo-urna/${config.contest}/config/${uf}/${uf}-p${config.contest.padStart(6, "0")}-cs.json`,
           );
+          for (const unit of inventory(inv, config.contest))
+            if (unit.generation.trim()) configuredTotalized.add(unit.id);
           for (const change of changedSections(inv, config.contest, known))
             if (sectionIds.has(change.id))
               pending.set(change.id, change.generation);
         }
         scannedAt = Date.now();
       }
-      const changed: Observation[] = [],
-        slice = [...pending]
+      const changed: Observation[] = [];
+      for (const [key, signature] of [...municipalQueue].slice(0, 200)) {
+        if (Date.now() >= stopAt) break;
+        await renew();
+        const [ufCode, municipality] = key.split("/"), uf = ufCode.toLowerCase(),
+          url = `${TSE}/ele2026/6258/dados/${uf}/${uf}${municipality}-c0001-e006258-u.json`;
+        try {
+          const official = parseOfficial(await client.official(url), IDENTITY, url.replace(".json", ".jws"));
+          if (!official.sourceTime) throw Error("municipal source time missing");
+          const units = municipalSections.get(key)!,
+            records = units.map((s) => ledger.records.get(s.id)).filter((r): r is Observation => !!r);
+          for (const o of estimateMunicipalObservations({
+            sections: units, real: records.filter((r) => !r.estimated), previous: records.filter((r) => r.estimated),
+            partial: { a: official.a, b: official.b, blank: official.blank, null: official.null,
+              countedSections: official.countedSections, sourceTime: tseTime(official.sourceTime) },
+            totalized: configuredTotalized, order: receiptOrder, identity: IDENTITY, retrievedAt: new Date().toISOString(),
+          }))
+            if (applyObservation(o)) changed.push(o);
+          municipalSeen.set(key, signature);
+          municipalQueue.delete(key);
+          errors.delete(`municipal:${key}`);
+        } catch (e) {
+          errors.add(`municipal:${key}`);
+          console.error(`Falha no parcial municipal ${key}: ${String(e)}`);
+        }
+      }
+      const slice = [...pending]
           .filter(([id]) => Date.now() >= (retryAt.get(id) ?? 0))
           .slice(0, 128);
       for (const [id, generation] of slice) {
         if(Date.now()>=stopAt) break;
         await renew();
         try {
-          const old = ledger.records.get(id),
+          // A municipal estimate is not a prior BU version; collection policy only sees real BUs.
+          const recorded = ledger.records.get(id),
+            old = recorded?.estimated ? undefined : recorded,
             o = await collectSection(client, config.contest, id, IDENTITY, old);
           if (o) {
             errors.delete(id);
@@ -527,7 +573,7 @@ do {
                 id,
                 Date.now() + (ledger.quarantined.has(id) ? 300000 : 10000),
               );
-          } else retryAt.set(id, Date.now() + 10000);
+          } else retryAt.set(id, Date.now() + 60000);
         } catch (e) {
           errors.add(id);
           retryAt.set(
