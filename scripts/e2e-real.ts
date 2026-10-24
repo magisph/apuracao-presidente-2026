@@ -52,11 +52,12 @@ try {
   const office = raw.carg.find((c: any) => String(c.cd).padStart(4, "0") === identity.office);
   const candidates = office.agr.flatMap((g: any) => g.par.flatMap((p: any) => p.cand));
   const vote = (n: string) => Number(candidates.find((c: any) => String(c.n) === n)?.vap ?? NaN);
-  const official = { a: vote("13"), b: vote("22"), valid: Number(raw.v.vvc), blank: Number(raw.v.vb),
-    null: Number(raw.v.vn), countedSections: Number(raw.s.st), totalSections: Number(raw.s.ts) };
+  // vnt: nominal BU votes for numbers whose candidacy does not count, reclassified by TSE as technical nulls.
+  const official = { a: vote("13"), b: vote("22"), valid: Number(raw.v.vvc), technicalNull: Number(raw.v.vnt ?? 0),
+    blank: Number(raw.v.vb), null: Number(raw.v.vn), countedSections: Number(raw.s.st), totalSections: Number(raw.s.ts) };
   report.official = official;
   report.matches = { a: totals.a === official.a, b: totals.b === official.b,
-    valid: totals.a + totals.b + totals.other === official.valid, blank: totals.blank === official.blank,
+    nominal: totals.a + totals.b + totals.other === official.valid + official.technicalNull, blank: totals.blank === official.blank,
     null: totals.null === official.null,
     sections: [totalized, totalizedMembers].includes(official.countedSections) };
   if (endpoint) {
