@@ -30,3 +30,13 @@ Processos `prepare-order.ts` (parou depois de PR) e calibração (`holdout-natio
 - Ordem do 1º turno: `node --max-old-space-size=6144 --experimental-strip-types scripts/prepare-order.ts > data/prepare-order.log 2>&1` (ZIPs já baixados em `data/historical/` são reaproveitados por SHA-512).
 - Calibração: `HOLDOUT_SHOCKS="0.03:0.035,0.045:0.05,0.07:0.07,0.1:0.1" node --max-old-space-size=8192 --experimental-strip-types scripts/holdout-national.ts > data/holdout-calibration.log 2>&1` (~25 min; saída em `data/holdout-national-2022/report-calibration.json`).
 - O monitor da primeira publicação do run novo deixou de existir: conferir `/api/health` e GitHub Actions manualmente.
+
+## Retomada concluída localmente — 24/10, noite
+
+Ver `docs/progresso-modo-municipal-2026-10-24.md` e `docs/revisao-municipal-2026-10-24.md` para o estado atual. Produção segue em `d6eaf57`, run `40133213187`, iniciado às 18h12. O branch `modo-municipal` recebeu correções de seis grupos importantes apontados em revisão independente, correção adicional das datas ISO de recebimento de 2026 e compactação de lotes/páginas de recuperação. Apenas os dois choques padrão mudaram no modelo pontual preservado.
+
+Ordem completa e verificada commitada em `1764255`: 499.206 entradas utilizáveis e 42 sem histórico, hash do gzip `079bae7eeec2405ed2b8aa41caa325c03901d309d941537cb48d43d65d73cf4a`. Não repetir a geração sem necessidade: caches por UF e ZIPs oficiais estão preservados. A primeira tentativa inteira ausente foi rejeitada, não commitada.
+
+Calibração repetida e concluída: **0,03 nacional / 0,035 UF** é o menor par da grade com cobertura nos 14 checkpoints abaixo de 100% nos modos seção e municipal. Evidência versionada em `config/calibracao-faixa-2022.json`; calibração provisória de uma única eleição, sem probabilidade/vencedor estatístico. **98 testes e build aprovados; dry-run de deploy aprovado.**
+
+Todos os processos locais de geração terminaram. Nenhuma modificação foi enviada à produção nesta retomada. Próximo gate: **pedir confirmação do usuário para merge na main, push e ativação**; depois CI, deploy da API/assets compatíveis e troca controlada do run, conferindo a primeira publicação pelo novo hash de modelo. Lembrete de 25/10 às 15h15 de Brasília criado, somente para avisar.

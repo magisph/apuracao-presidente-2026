@@ -331,3 +331,17 @@ Executado conforme plano aprovado pelo usuário, no branch `pendencias-eleicao-2
 1. A faixa nominal de 95% é conservadora demais (±7–8 pp no início da apuração). Não foi recalibrada: alterar o modelo na véspera, sem validação entre eleições, aumentaria o risco.
 2. Margem de cota D1 de cerca de 33 mil linhas no dia UTC 25/10. Se for excedida, as escritas param até 00:00 UTC (21h de Brasília); os coletores sobrevivem e retomam.
 3. A troca natural de ciclo cairia por volta de 17h25 de Brasília em 25/10; o realinhamento planejado para 15h15 de Brasília a evita.
+
+## 20. Modo municipal e faixa provisória preparados — 24/10/2026, noite
+
+Estado atual consolidado em `docs/revisao-municipal-2026-10-24.md`. O branch local `modo-municipal` está preparado; a produção ainda executa `main=d6eaf57`, run `40133213187`, e aguarda confirmação humana para merge/push/ativação.
+
+- Fallback municipal com andamento e EA20 assinados; estimativas explícitas, precedência do BU real, reconciliação de residual, tratamento de inventário indisponível, correções para zero e arquivos defasados.
+- Seis grupos importantes da revisão independente receberam correções com regressões RED→GREEN. Lotes limitados por bytes e agrupamento de até 1.024 observações reduzem amplificação de escritas; recuperação em páginas de dez, mantendo o padrão legado da API.
+- Ordem de recebimento 1T validada e commitada (`1764255`): 499.206 horários utilizáveis em 499.248 unidades, todas as unidades modeladas cobertas, 42 ausentes fora do modelo. O gerador foi corrigido após detectar o formato ISO nas datas reais de 2026. SHA-256 do gzip: `079bae7eeec2405ed2b8aa41caa325c03901d309d941537cb48d43d65d73cf4a`.
+- Varredura de quatro pares nos modos seção e municipal concluída. Menor par aprovado nos 14 checkpoints abaixo de 100%: **nacional 0,03 / UF 0,035**. Faixas aproximadamente de 3,25 pp (seção) e 4,11 pp (municipal) no checkpoint inicial; 0,98 e 1,06 pp no de 50%. O estimador pontual foi preservado; só os choques padrão mudaram nesta retomada. Configuração e resultados em `config/calibracao-faixa-2022.json`.
+- **Calibração provisória, não independente:** mesma eleição de 2022 usada para seleção e avaliação; sem prova de cobertura futura de 95%, sem probabilidade ou selo estatístico de vencedor. Checkpoint de 100% preserva as pequenas diferenças do universo histórico e não foi usado para escolher choques.
+- **98 testes aprovados, build/TypeScript aprovados, dry-run de publicação aprovado.** Interface conferida em fixture local; todas as superfícies ocultam projeções abaixo de 1%.
+- Nenhum dado de teste enviado à produção, nenhum banco apagado e nenhum plano pago contratado. A carga municipal real de 25/10 permanece futura; o orçamento anterior não é homologação desse volume.
+
+Congelamento pedido para 25/10 às 12h de Brasília. Lembrete do realinhamento de run em 25/10 às 15h15 foi criado. Após confirmação: merge/push, CI, API/assets compatíveis antes dos novos coletores e conferência da primeira publicação pelo hash de modelo `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`. Até lá, mudanças apenas locais.
