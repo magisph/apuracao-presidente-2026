@@ -36,6 +36,8 @@ export interface Observation extends ElectionIdentity {
   retrievedAt: string;
   inventoryGeneration?: string;
   payloadSha256?: string;
+  // Derived from the municipal partial, not from a BU; any real BU for the section supersedes it.
+  estimated?: boolean;
 }
 export interface Projection {
   available: boolean;

@@ -79,6 +79,13 @@ export class SectionLedger {
       throw Error("invalid provenance");
     if (!["totalized", "received", "excluded"].includes(o.status))
       throw Error("invalid status");
+    // Real BUs always win over municipal estimates, in both directions and regardless of version clocks.
+    if (prior && !prior.estimated && o.estimated) return false;
+    if (prior && prior.estimated && !o.estimated) {
+      this.quarantined.delete(o.id);
+      this.records.set(o.id, structuredClone(o));
+      return true;
+    }
     if (prior && o.version < prior.version) return false;
     if (prior && o.version === prior.version) {
       const canonical = ({ retrievedAt, ...rest }: Observation) =>
