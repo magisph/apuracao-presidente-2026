@@ -1,0 +1,13 @@
+name = "apuracao-presidente-2026"
+main = "index.ts"
+compatibility_date = "2026-10-24"
+
+[vars]
+ORIGIN = "https://SUBSTITUIR.pages.dev"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "apuracao-presidente-2026"
+database_id = "SUBSTITUIR-APOS-AUTORIZACAO"
+
+# INGEST_TOKEN deve ser configurado como secret, nunca neste arquivo.

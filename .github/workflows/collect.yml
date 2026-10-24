@@ -1,0 +1,78 @@
+name: Coleta eleitoral
+on:
+  workflow_dispatch:
+    inputs:
+      continue_chain:
+        description: Continuar até o prazo final configurado
+        type: boolean
+        default: false
+      duration_minutes:
+        description: Duração de cada ciclo (2 para ensaio; 345 para operação)
+        type: string
+        default: "345"
+permissions:
+  contents: read
+concurrency:
+  group: presidential-collector
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [coordinator, g0, g1, g2, g3, g4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Obter base previamente validada
+        if: vars.BASE_URL != ''
+        env:
+          BASE_URL: ${{ vars.BASE_URL }}
+          BASE_SHA256: ${{ vars.BASE_SHA256 }}
+        run: |
+          mkdir -p data
+          curl --fail --location --retry 3 --proto '=https' --tlsv1.2 "$BASE_URL" -o data/base.download
+          gzip -dc data/base.download > data/base.json
+          printf '%s  data/base.json\n' "$BASE_SHA256" | sha256sum --check
+      - name: Coletar e persistir
+        run: npm run collect
+        env:
+          COLLECTOR_SHARD: ${{ matrix.shard }}
+          COLLECTOR_MINUTES: ${{ inputs.duration_minutes || '345' }}
+          PUBLISH_INTERVAL_MS: "90000"
+          INGEST_URL: ${{ vars.INGEST_URL }}
+          INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: checkpoint-${{ matrix.shard }}
+          path: |
+            data/outbox-*.json
+            data/health-*.json
+          retention-days: 2
+  continue:
+    needs: collect
+    if: always() && inputs.continue_chain && vars.CHAIN_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Encadear nova execução até prazo explícito
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          DEADLINE: ${{ vars.COLLECTION_DEADLINE_UTC }}
+        run: |
+          test -n "$DEADLINE"
+          if test "$(date -u +%s)" -lt "$(date -u -d "$DEADLINE" +%s)"; then
+            gh workflow run collect.yml --repo "$REPO" -f continue_chain=true -f duration_minutes=345
+          else
+            echo "Prazo de coleta encerrado."
+          fi

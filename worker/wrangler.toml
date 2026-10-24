@@ -1,0 +1,23 @@
+name = "apuracao-presidente-2026"
+main = "index.ts"
+account_id = "7b4711d66144a4c3e4f93192d03d0c67"
+compatibility_date = "2026-10-24"
+workers_dev = true
+
+[vars]
+ORIGIN = "https://apuracao-presidente-2026.phdtemiranda.workers.dev"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "apuracao-presidente-2026"
+database_id = "0827acf3-6d7f-4351-b361-4e19e1fad55f"
+
+[assets]
+directory = "../dist"
+run_worker_first = ["/api/*", "/ingest/*"]
+
+[observability]
+enabled = true
+head_sampling_rate = 0.01
+
+# INGEST_TOKEN é secret; nunca inserir seu valor neste arquivo.

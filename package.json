@@ -1,0 +1,33 @@
+{
+  "name": "apuracao-presidente-2026",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node --experimental-strip-types server.ts",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "collect": "node --experimental-strip-types scripts/collect.ts",
+    "collect:local": "node --experimental-strip-types scripts/run-local.ts",
+    "import:base": "node --experimental-strip-types scripts/import-base.ts",
+    "prepare:base": "node --experimental-strip-types scripts/prepare-base.ts",
+    "backtest": "node --experimental-strip-types scripts/backtest.ts",
+    "stress": "node --experimental-strip-types scripts/stress.ts",
+    "holdout": "node --experimental-strip-types scripts/holdout.ts",
+    "reconcile:base": "node --experimental-strip-types scripts/reconcile-base.ts",
+    "validate:live": "node --experimental-strip-types scripts/validate-live.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "@types/yauzl": "2.10.3",
+    "typescript": "5.9.3",
+    "vite": "7.3.7"
+  },
+  "dependencies": {
+    "yauzl": "3.4.0"
+  }
+}

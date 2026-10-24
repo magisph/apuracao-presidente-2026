@@ -1,0 +1,10 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS leases (shard TEXT PRIMARY KEY, owner TEXT NOT NULL, epoch INTEGER NOT NULL, expires INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS snapshots (sequence INTEGER PRIMARY KEY, id TEXT NOT NULL UNIQUE, hash TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS latest (singleton INTEGER PRIMARY KEY CHECK(singleton=1), sequence INTEGER NOT NULL REFERENCES snapshots(sequence));
+CREATE TABLE IF NOT EXISTS batches (serial INTEGER PRIMARY KEY AUTOINCREMENT, shard TEXT NOT NULL, id TEXT NOT NULL, hash TEXT NOT NULL, payload TEXT NOT NULL, created_at INTEGER NOT NULL, UNIQUE(shard,id));
+CREATE INDEX IF NOT EXISTS batches_cursor ON batches(shard,serial);
+CREATE TABLE IF NOT EXISTS territorial_blobs (hash TEXT PRIMARY KEY,payload TEXT NOT NULL,uf TEXT);
+CREATE TABLE IF NOT EXISTS staged_publications (sequence INTEGER PRIMARY KEY);
+CREATE TABLE IF NOT EXISTS territorial_pages (sequence INTEGER NOT NULL, uf TEXT NOT NULL, page INTEGER NOT NULL, hash TEXT NOT NULL REFERENCES territorial_blobs(hash), PRIMARY KEY(sequence,uf,page));
+CREATE TABLE IF NOT EXISTS heartbeat (shard TEXT PRIMARY KEY, payload TEXT NOT NULL, checked_at INTEGER NOT NULL);
