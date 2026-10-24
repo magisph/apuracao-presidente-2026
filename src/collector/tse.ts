@@ -52,13 +52,12 @@ export function inventory(raw: any, contest: string) {
         }
   return out;
 }
-export async function collectSection(
+// Transport steps shared by collection and the real-data end-to-end check; policy stays in collectSection.
+export async function fetchAuxiliary(
   client: ReliableClient,
   contest: string,
   id: string,
-  identity: ElectionIdentity,
-  previous?: Observation,
-): Promise<Observation | null> {
+) {
   if (!/^\d+$/.test(contest) || !/^[a-z]{2}\/\d{5}\/\d{4}\/\d{4}$/.test(id))
     throw Error("invalid section URL");
   const [uf, m, z, s] = id.split("/"),
@@ -72,6 +71,34 @@ export async function collectSection(
       `${year}-${month}-${day}T${raw.hg}-03:00`,
     ).toISOString(),
     version = Date.parse(sourceTime);
+  return { raw, root, sourceTime, version };
+}
+export async function downloadBU(
+  client: ReliableClient,
+  root: string,
+  selected: { hash: string; filename: string },
+  identity: ElectionIdentity,
+) {
+  const bytes = await client.bytes(`${root}/${selected.hash}/${selected.filename}`);
+  return {
+    bytes,
+    decode: () =>
+      decodePresidentialBU(
+        bytes,
+        Number(identity.election),
+        Number(identity.office),
+        ...(identity.candidates.map(Number) as [number, number]),
+      ),
+  };
+}
+export async function collectSection(
+  client: ReliableClient,
+  contest: string,
+  id: string,
+  identity: ElectionIdentity,
+  previous?: Observation,
+): Promise<Observation | null> {
+  const { raw, root, sourceTime, version } = await fetchAuxiliary(client, contest, id);
   let selected;
   try {
     selected = selectAuxiliary(raw);
@@ -104,17 +131,10 @@ export async function collectSection(
       sourceTime,
       retrievedAt: new Date().toISOString(),
     };
-  const bytes = await client.bytes(
-    `${root}/${selected.hash}/${selected.filename}`,
-  );
+  const { bytes, decode } = await downloadBU(client, root, selected, identity);
   let bu;
   try {
-    bu = decodePresidentialBU(
-      bytes,
-      Number(identity.election),
-      Number(identity.office),
-      ...(identity.candidates.map(Number) as [number, number]),
-    );
+    bu = decode();
     if (bu.other || bu.a + bu.b + bu.blank + bu.null > bu.electorate)
       throw Error("inconsistent presidential BU");
   } catch (error) {
