@@ -1,1 +1,632 @@
-{"createdAt":"2026-10-24T17:58:46.168Z","runtime":"v26.8.1","tests":{"passed":71,"failed":0},"typecheck":true,"build":true,"npmAudit":{"info":0,"low":0,"moderate":0,"high":0,"critical":0,"total":0},"base":{"units":499248,"matched":499206,"unknownElectorate":42,"verifiedResources":28,"sha256":"2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff","previousSha256":"00bb45e7d962e15f778a923a29f97c99c2f1ac974ef1b17f0f16fec71fa7547f"},"latest":{"id":"live-8","model":"transfer-logit-v2-coherent","source":"https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.jws","officialTerritories":28,"votes":0},"benchmark":{"kind":"synthetic-observations-on-real-2026-base","precisionValidation":false,"units":499248,"observed":4993,"replicates":400,"ms":8806.6014,"rssBytes":580874240,"coverage":0.9999968818014132,"progress":0.009982291915486828,"territorialHierarchy":true,"municipalityCount":5757,"ufCount":28,"aggregateDifferenceA":0.00016201287508010864,"aggregateDifferenceB":0.00016201287508010864},"storageBudget":{"kind":"planning-estimate-not-production-verification","scenario":"6h de mudanças; publicação a cada90s, verificação oficial15s, bateladas128; todas as páginas mudam em todas as versões (conservador para blobs).","municipalities":5757,"pagesPerVersion":71,"rawMunicipalBytes":3555355,"maxIngestPageBytes":62920,"ingestPageLimit":90000,"initialReplayRequests":2,"compressedMunicipalBytes":1042668,"storedBatchBytes":3340,"estimatedDataBytes":272869660,"estimatedRowsWritten24h":71223,"estimatedWorkerRequests24h":74461,"limits":{"d1DatabaseBytes":524288000,"d1WritesPerDay":100000,"workerRequestsPerDay":100000},"limitations":["Não mede CPU no Worker, latência real, índices reais ou amplificação causada por retries.","Requer ensaio na conta real antes de habilitar encadeamento.","Rajadas, uso por terceiros e duração maior da apuração alteram o orçamento."]},"holdout":{"kind":"real-counts-reconstructed-receipt-order","operationalLedger":true,"units":2124,"accepted":2124,"rejected":0,"electorateDifferences":210,"calibrationSufficient":false},"review":{"independentTestsPassed":55,"importantFindings":2,"fixedWithRedGreenTests":2,"reviewRepeated":false},"browser":{"official":true,"synthetic":true,"municipalSelectionPreserved":true,"municipalReplay":true,"checkedServer":"http://127.0.0.1:4269"},"historicalScreenshot":"docs/evidencias/painel-ensaio-desktop.png is the pre-correction synthetic layout capture; current interface inspected separately","files":{".github/workflows/collect.yml":"c0b709f2d16bddb82023d4bdf3481e1a25b2b67477d71af03372c518b321853d",".github/workflows/validate.yml":"e2d73a0ebb39a72f0aaa696f305ea001a3f639192bffcb417f08b155ca5523ec",".gitignore":"fef550c2c8307c34d3640487bc401307d70958150c5adf6c361e0dddbb4916cb","README.md":"74564d52e607a2e45052beb6cdcc12f40df4b2001fb444b6d51115c699e4d7d2","docs/api.md":"56a022ae030227b7a27d4ce93ccc68c69e3646afe03c46f5e515c4af49aedc20","docs/evidencias/painel-ensaio-desktop.png":"e15ad3f92ae4f9485d4bd4019420f16fc142059a5d7df9fd9c78f6d7edd524c4","docs/evidencias/producao.json":"8dd88646698235be32e4449cc1ca31261b490e15b522f5f21f16f4c23788fdfd","docs/fontes.md":"236b4aed566c037f00c8b63ece80e224e36a0608aaa1ef8e6f16fec690ff7001","docs/metodo.md":"e544384b7004ccbc5de4a81bd59d90af23218630c09e1ff40832f4d50f78fe4f","docs/nuvem.md":"c900f9ce7ad91d529336a31af3a771cb7c07240e910bbd9ee2c212ff6d3cd125","docs/progresso-correcao.md":"7d2d24b729a3200838d3f9ae8da28cc68b5962225b264579b5c48f72cb6b39ff","docs/progresso-pico.md":"89be149705a87c213bbc9a731a7def674da695687230f21beb9a8165b0604aaf","docs/progresso-producao.md":"4bc9d75db804f57e268d8e2d84e63cd5a37e6280a818ca081f8ebc685404d42e","docs/progresso.md":"664605023a835199d353e6ddfd9e38d90e50795b4b5ae4eb1e99b43a06e4597b","docs/relatorio-completo-sistema-2026-10-24.md":"25a8daaabbc13b92711ec521cefaf9fb8753c86b14257ec325396409bd79d72c","docs/revisao-corrigida.md":"9482ea9fd93c60afbcd64b3fee74336ef8a55d7044ded2c75365551e3cdf5e55","docs/sistema.md":"07a80bd1daf78b2e374b941176aefcf0072d2ece4aab3d48f4802528346d6e83","docs/superpowers/plans/2026-10-24-apuracao.md":"0fbc98ed7829a76654aa6a204eee00aacaafb27becccbac9eb3339fe0801f380","docs/superpowers/plans/2026-10-24-correcoes-revisao.md":"9a69e355101556fdd6847738911d876cfae26479ac1401cad3084cf5702fd8af","docs/validacao.md":"f35a6fee7e774512f58ba89116978fb041d16589b9a979b228da94ac04ccddb6","index.html":"de263077921e9427662615c08e3eb6d94cb63946400a5b89518f19f351e4936e","package-lock.json":"9413de380042dd28addde3d271913e5757c1965e1aff62f273ce757a3901ca61","package.json":"5eac7fb1c9f3c66a231b0081d1045418480baf5976a61edf800c4d4273134f07","public/br-uf.geojson":"07c671aa87aa1ab296c446de6294df9827112782537b996c0a160284907e7c0f","scripts/backtest.ts":"3dd1d07a23cc4ac162fa3eb0e12357f8a85903ae7504a6449223a35450e2e75d","scripts/benchmark.ts":"30041cba8004494a83071bd02f4de992246337088ec7f919ab3a3cbf41670832","scripts/collect.ts":"a36b47a2a6081a6dff3fc4c6b529347d2dc9f0ca6ebdcab2d9d82a48054fc139","scripts/e2e-real.ts":"726894e6c1d76cf24aeda406ae9b21d95361e1a615214550d5287500edef94b5","scripts/holdout-national.ts":"87ecfc2aa4f74cfd4c3a7fa8b47f01e6b38394caed4903697362473597b4e250","scripts/holdout.ts":"c5af4883ed2ca4784587aa0bd25211b607034fd85042374d90128f36cd315f90","scripts/import-base.ts":"e164bd9720f96400a921d7cdeb30dd39dac54464b61307974f99bfddfea3f406","scripts/peak.ts":"c5fbdbeb1ba5328b13f40931f96b4b1c03ffb19ae223305c60f2453a3f7d92ca","scripts/prepare-base.ts":"a198735fbf7cfc87178c527daf6b362ec7fc4c8ea02782441f36002cc0deacf3","scripts/reconcile-base.ts":"3f47fe9e8ecba3ef7be2534944951cd684a514fdb7804e18cd3f12ad0fe60e14","scripts/run-local.ts":"05dfb1f4d78aa6b5f926e16f0506f2298ef291245425ac40608eacafbc26bc75","scripts/storage-budget.ts":"2a82356137c7aaea87ab7f31e9fb5b4163c20a3e4ca2e6c5a048c221d7e5463a","scripts/stress.ts":"29b31ee157b8ff44ad122131b72a461e7d37ea715dda70aa1d7944b019d8f45b","scripts/supervise.ts":"d40003c6a15d375fb01492b2d626f2555abbd9aaea52b21d18bc4cf903b34215","scripts/validate-live.ts":"b3ee57abc5c43c2c45b9809f4462ebf53acbd718fdaf6444082c0c473ab3832e","server.ts":"0ddf39109a047255e1fb783c83ed70a2a263844813126521efd7953e0db6923e","src/collector/base.ts":"f3365d2529855ce6d68e158cb7f8037aed5ff24f9593e3cc73ed79447ce2d55f","src/collector/ber.ts":"3d637f53001550db1bdc5add9256431bdfb89ffbea4c989b53fa3443520121be","src/collector/csv.ts":"c1ab2590eca3ce7483a25d8a8871823c0cd74c6de80d96d1dbd19784ab8fc1c3","src/collector/download.ts":"094cc2bfab441a076edd58c3924b22eab5f335a56fe1a7577403222170439529","src/collector/events.ts":"99943893b06aaf146587e1320ffa43ee517653a6f37ed2e6de380854f9362b86","src/collector/failure.ts":"6c09aaef0705f5ffa75ad1e5a159495e6f3e0de708e19c240fddbc8613842f83","src/collector/health.ts":"bd681347faa52972d157c90423f7d2b1e45ee017dab8f1d671a7e80abea279a2","src/collector/http.ts":"4a1d2567f02beba9723e9a0c979b86076ef529016f9668ccdbf3e36f7f51c6b5","src/collector/local-lock.ts":"15161c632a2ada345d3d1ba1fc28afa9b7835359abbe6f10279510c59b042a99","src/collector/outbox.ts":"13e8020f856682064055f9a3919f97bf1868636d15b8a657010144845119e375","src/collector/partition.ts":"78a1d2a055d34499320a63c2459f48f40b075d11e0bc482ef43061f9202b0b26","src/collector/provenance.ts":"80311e09948c39591e0750924a8cd612d1e8a0fe1ac180089950d13c1de4e12a","src/collector/publication.ts":"c8725395d189a1a20b8da56800d656aec6584ddecf1c621ea8a63c27c4c96631","src/collector/scanner.ts":"e67a1fe470e0d0167ff1e0883aadeb911693302f02d43173763aab92c45f8dc3","src/collector/schedule.ts":"65a08264c5b13a36b85668faefc9c16fe4ced1d8b054ee4fc4adbd93a52d4f53","src/collector/store.ts":"38cc68f137b007b79cb11713db275298631e24132bd6c5f1b5833b5cd91324ee","src/collector/tse.ts":"b74c0f4b8abe8d28fefeea5e80413d7f3c3a63765e4230008d1bf29e17ba1579","src/collector/zip.ts":"a3aab965f8a9a5b0a7405e2ac3364e7bc8177b6f3b089de1a891666dd4ef5e86","src/core/change.ts":"17242f4f3e9d3efcea21c3efd3f4791240ca08e469577115a7d8a97d70bba9c2","src/core/codec.ts":"a14357b5ca3910c8b19fce39bcbd01ce7571aade8534d909f759d279c86de7f9","src/core/decision.ts":"4f8265b2b75610385802cbdfca365db7269d0c95d3eda7d36b853a89b7285de7","src/core/demo.ts":"fa54361e63943cd80a5a466a809cc4ac35da96e430e7a20cfc19f5fbb3c0fd3c","src/core/evaluation.ts":"dfc5c554fd250ac8750ed6b139e9158a431bcd07aeddacc17294898e2dd7ba09","src/core/history.ts":"26bc41848dc62812fc0be6a044567d69ab023cb4e91e560d5d286653f1f2e0c0","src/core/ledger.ts":"811f7bbd984bc5a9ca0e13a7d2bcb6865aade6750409aa1f73a270b5081b54d9","src/core/model.ts":"5ae9c873a8996d5c590dde80d5d8368ee53ed067a41829e2fe430e82e7a02ae3","src/core/official.ts":"2f93f0bc193e2c54125baec3631d2f8944705969e96cfeb50d4718384ec61243","src/core/snapshot.ts":"3c3b39652cd55fb19191af2f64c15271a305a4f0e706c45ef4bf4aad9db28360","src/core/territories.ts":"61143b586360410f19b2063c3653a420014874fc90901b27ff7e0968f6606e3a","src/core/types.ts":"aa7050d7b33d21355e22b2bd89c8712d7992c4fcac7f43666d8478e071c68ae1","src/core/validation.ts":"f2d0e82f2550b8950e3abc303133bd059803d002dfa21700cd7b34eaf86d521a","src/ui/history.ts":"231be588ffe697b01b10b12605ebe0b46fd9bbe06eaad0f793eb2d446cc588d1","src/ui/main.ts":"5eab2fccead4a38b159886df12feefa8e7738405ae8b8880a2ad80ad1104c56b","src/ui/state.ts":"e0eb3d93694269f9a587b364320824a223928731832f60925d6c9b601271c25c","src/ui/style.css":"1c13c82748dd274066e57440b0ca35bd8047b2c9f74680d9757ec7f4ccfe01ae","tests/base.test.ts":"934ada3cc8ae7ab829b18194a77127db456ebc5187ff53781b072055aa777384","tests/change.test.ts":"81c63986eec60ecfd198b7a1307e323b58765b90e63b48b505dffc7ec017ceb1","tests/cloud.test.ts":"048d196fc255882b4835a3b4ffcaa9a5be9f15da0c4562e31187cabb904b0716","tests/collector-flow.test.ts":"320ce1aa1b4f4a68ea3fd733dcc32212e0549d43f0e465bb460a67796c163cfc","tests/collector.test.ts":"91b4ce20daac8dd05d17e704aa3ca5f0495ce70884f0a9ffc9132939f38b2d9a","tests/core.test.ts":"103099fc40601387a30f506ef9a8aa6608f619eacde605bbae3a668fec8c2d65","tests/decision.test.ts":"de7e35e3ec0e35ba978e85db8c4dc3f594088a64e1965af5b505d41cad6dbed3","tests/delivery.test.ts":"3f38a86ba8dd078ad7cc066f3de5b1e193978ece74afbec43efbf67b39bac04c","tests/evaluation.test.ts":"690a7f09de005c36c2aaa36c88e7efd9c90af41331758d74a7369aac194676e0","tests/failure.test.ts":"158c77e261ffb932165d64c24228da1379ff11c2a7a158350c63850526453a4c","tests/fixtures/ac-01066-0004-0077-bu.dat":"e987c40fc752fef52b3e03bea6fbe2f1893c4b2e94309f4f5c933319d8ed8985","tests/fixtures/ea16-ac-2t.json":"55460f928784a3a3a29a425b3448ab67b523665cd4615b92d57d2712f27cff9c","tests/fixtures/ea20-2026-2t-before.json":"d57a0b93daff57aca9767c05cf2c9b10a293dc5eea42be96cb1cfd3993c131c9","tests/fixtures/ea20-2026-2t-before.jws":"eca82022f338f6bf3f5d51f170e6b9f170f5ecdba2aca5e7a42ea06e7a6485eb","tests/hierarchy.test.ts":"8ee9f96c9b6112f23bd8bcf933c55fdd90ba0912e2c927c43a7ded032e915820","tests/history.test.ts":"30aafa6e0eda2ec5af7d5f242febfee8c7a39d3e015849fef9c4902fd75be26f","tests/partition.test.ts":"9ae2abbbc6bf642078e5a331cc025b7df6642c9d4bfccad8bcb4ba824bdb66d1","tests/provenance.test.ts":"dc8348c1704a5c8be685af01dad6a92f0e53341a90d489e026d1b90bb092cfcb","tests/publication.test.ts":"7bc4f431b7117d1eb1f618d0bcae8c94978eb9cbce3974711d07be93c1f8c149","tests/recovery.test.ts":"03401e40a128eaea717e16a1aa5ab1aab1dffe85a481b00a8fa198616c3d4d2b","tests/regressions.test.ts":"b4b6279d46dba7db1cef689e9e5bfbbc934c62760b11cd77a5a04434ad1e510c","tests/scanner.test.ts":"05afc7e4ea1be823d78585db43ad24cb81e7792f4628a1a38fca3be190e2a7aa","tests/schedule.test.ts":"39b3eef3240a3fc52481da735eb0b0df4c9bbe7cf6c1037c7f70881a6d42175a","tsconfig.json":"d4b38123ed8699f03997258ddb0e3d88b97f9645f2aa2172226e05f17185db75","worker/index.ts":"623a5600a0a743c0bea29e143f174e10386b3a30b3c46f449f9d91508ed95ab1","worker/schema.sql":"504d799e4410546d788d139917435149001cbb1fad5151a938fab91e3e9e8eec","worker/wrangler.toml":"0202b6b4d2d1bd920297ff4e3d4ddae50efa723c49ed981aceb4c76536dfd1ef","worker/wrangler.toml.example":"667aeebf0abe0962e70941d8fa9d0ec02f4a7f61f8b36bfd19d38e3de3cab206","data/verify-final-20261024.log":"dbd74fd7c0bfcafcbe148ed68e02cac705301205c661c035d79f316d62549d40","data/peak-report-remote-resume.json":"60629135ae0d6abfdb8937049b33dc9471b5b3fe50a904441fa46bab81100481","data/e2e-real-report.json":"74b60e868093e234fa07f8e331f055a8945209b51524f086c106162c7ea3bd88","data/holdout-national-2022/report.json":"8b32b99f2dc45a9d5b3c47e645a97c834bbcea6c16ae1f8ed6189517f3dfd3cb"},"externalDeploymentVerified":true,"statisticalNationalCalibrationVerified":false,"production":{"url":"https://apuracao-presidente-2026.phdtemiranda.workers.dev","repository":"https://github.com/magisph/apuracao-presidente-2026","workerVersion":"8d7a7095-bb74-409f-aeeb-35bb211d9a4a","d1Id":"0827acf3-6d7f-4351-b361-4e19e1fad55f","verifiedAt":"2026-10-24T15:20:16.309Z","integrity":{"checkedAt":"2026-10-24T15:11:09.777Z","batchCreated":201,"idempotentRepeat":200,"immutableConflict":409,"fencedOldEpoch":409,"incompleteSnapshotRejected":409,"latestUnchanged":"live-1","municipalities":22,"probeContainsVotes":false},"runtime":{"checkedAt":"2026-10-24T15:20:16.309Z","root":"https://apuracao-presidente-2026.phdtemiranda.workers.dev","snapshot":"live-3","source":"https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.jws","officialVotes":0,"observedBUs":0,"baseHash":"2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff","modelVersion":"transfer-logit-v2-coherent","modelHash":"5ae9c873a8996d5c590dde80d5d8368ee53ed067a41829e2fe430e82e7a02ae3","healthState":"ok","checkedSourceAt":"2026-10-24T15:20:05.867Z","groups":{"g1":{"checkedAt":"2026-10-24T15:19:39.025Z","queue":0,"state":"ok"},"g4":{"checkedAt":"2026-10-24T15:19:48.955Z","queue":0,"state":"ok"},"g2":{"checkedAt":"2026-10-24T15:19:39.800Z","queue":0,"state":"ok"},"g0":{"checkedAt":"2026-10-24T15:19:37.475Z","queue":0,"state":"ok"},"g3":{"checkedAt":"2026-10-24T15:19:45.130Z","queue":0,"state":"ok"}},"privateIngestStatus":200,"municipalitiesSP":645,"historyVersions":3},"chainTestRun":40105848462,"automaticallyDispatchedRun":40106029417,"validationRun":40106783406,"deadline":"2026-10-26T12:00:00Z","pcPhysicallyOffTested":false,"fullElectionLoadTested":true,"fullElectionLoadScope":"isolated Worker/D1 with the production Worker code and synthetic votes on real geography; not the real 25/10 peak"},"peakNational":{"runId":"peak-1792863040184","completed":true,"fullNationalRoundTrip":true,"records":499248,"batches":3902,"recordsPerSecond":1472.2711812634332,"recoveryMs":42247.1176,"concurrentReads":{"clients":10,"requests":800,"ms":12529.354399999953},"remotePublicationMs":[{"fraction":0.1,"ms":11868.9957},{"fraction":1,"ms":11253.309799999995}],"productionWrites":0},"realEndToEnd":{"kind":"real-first-round-2026-end-to-end","uf":"ac","contest":"3220","completed":true,"collection":{"sections":2270,"totalized":2270,"totalizedMembers":2411,"notTotalized":0,"ms":907908.8141000001,"totals":{"a":134770,"b":302807,"other":31512,"blank":5579,"null":13662}},"official":{"a":134770,"b":302807,"valid":469066,"blank":5579,"null":13662,"countedSections":2270,"totalSections":2270,"technicalNull":23},"matches":{"a":true,"b":true,"blank":true,"null":true,"sections":true,"nominal":true},"roundTrip":{"batches":18,"records":2270,"ms":7567.755400000024,"equal":true},"productionWrites":0},"holdoutNational":{"kind":"national-real-counts-reconstructed-final-receipt-order","files":56,"accepted":472028,"rejected":0,"electorateDifferences":49710,"parameterTuningPerformed":false,"calibrationSufficient":false,"modelSha256":"5ae9c873a8996d5c590dde80d5d8368ee53ed067a41829e2fe430e82e7a02ae3","samples":[{"target":0.01,"errorPP":0.46970564187700514,"covered":true,"widthPP":16.228946765994497},{"target":0.03,"errorPP":0.293740737103132,"covered":true,"widthPP":17.236966379901226},{"target":0.05,"errorPP":0.1869351780322437,"covered":true,"widthPP":15.296787863325633},{"target":0.1,"errorPP":0.13609575243701544,"covered":true,"widthPP":16.819967932181214},{"target":0.15,"errorPP":0.13020191375507917,"covered":true,"widthPP":14.965646948526656},{"target":0.2,"errorPP":0.11174247699835549,"covered":true,"widthPP":14.841676665917774},{"target":0.5,"errorPP":0.024972253811783585,"covered":true,"widthPP":8.770126321142385},{"target":1,"errorPP":0.00005929216740918619,"covered":false,"widthPP":0}]}}
+{
+  "createdAt": "2026-10-24T23:22:10.188Z",
+  "runtime": "v26.8.1",
+  "tests": {
+    "passed": 98,
+    "failed": 0
+  },
+  "typecheck": true,
+  "build": true,
+  "npmAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "base": {
+    "units": 499248,
+    "matched": 499206,
+    "unknownElectorate": 42,
+    "verifiedResources": 28,
+    "sha256": "2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff",
+    "previousSha256": "00bb45e7d962e15f778a923a29f97c99c2f1ac974ef1b17f0f16fec71fa7547f"
+  },
+  "latest": {
+    "id": "live-8",
+    "model": "transfer-logit-v2-coherent",
+    "source": "https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.jws",
+    "officialTerritories": 28,
+    "votes": 0
+  },
+  "benchmark": {
+    "kind": "synthetic-observations-on-real-2026-base",
+    "precisionValidation": false,
+    "units": 499248,
+    "observed": 4993,
+    "replicates": 400,
+    "ms": 8806.6014,
+    "rssBytes": 580874240,
+    "coverage": 0.9999968818014132,
+    "progress": 0.009982291915486828,
+    "territorialHierarchy": true,
+    "municipalityCount": 5757,
+    "ufCount": 28,
+    "aggregateDifferenceA": 0.00016201287508010864,
+    "aggregateDifferenceB": 0.00016201287508010864
+  },
+  "storageBudget": {
+    "kind": "planning-estimate-not-production-verification",
+    "scenario": "6h de mudanças; publicação a cada90s, verificação oficial15s, bateladas128; todas as páginas mudam em todas as versões (conservador para blobs).",
+    "municipalities": 5757,
+    "pagesPerVersion": 71,
+    "rawMunicipalBytes": 3555355,
+    "maxIngestPageBytes": 62920,
+    "ingestPageLimit": 90000,
+    "initialReplayRequests": 2,
+    "compressedMunicipalBytes": 1042668,
+    "storedBatchBytes": 3340,
+    "estimatedDataBytes": 272869660,
+    "estimatedRowsWritten24h": 71223,
+    "estimatedWorkerRequests24h": 74461,
+    "limits": {
+      "d1DatabaseBytes": 524288000,
+      "d1WritesPerDay": 100000,
+      "workerRequestsPerDay": 100000
+    },
+    "limitations": [
+      "Não mede CPU no Worker, latência real, índices reais ou amplificação causada por retries.",
+      "Requer ensaio na conta real antes de habilitar encadeamento.",
+      "Rajadas, uso por terceiros e duração maior da apuração alteram o orçamento."
+    ]
+  },
+  "holdout": {
+    "kind": "real-counts-reconstructed-receipt-order",
+    "operationalLedger": true,
+    "units": 2124,
+    "accepted": 2124,
+    "rejected": 0,
+    "electorateDifferences": 210,
+    "calibrationSufficient": false
+  },
+  "review": {
+    "independentTestsPassed": 55,
+    "importantFindings": 2,
+    "fixedWithRedGreenTests": 2,
+    "reviewRepeated": false
+  },
+  "browser": {
+    "official": true,
+    "synthetic": true,
+    "municipalSelectionPreserved": true,
+    "municipalReplay": true,
+    "checkedServer": "http://127.0.0.1:4269"
+  },
+  "historicalScreenshot": "docs/evidencias/painel-ensaio-desktop.png is the pre-correction synthetic layout capture; current interface inspected separately",
+  "files": {
+    ".github/workflows/collect.yml": "c0b709f2d16bddb82023d4bdf3481e1a25b2b67477d71af03372c518b321853d",
+    ".github/workflows/validate.yml": "e2d73a0ebb39a72f0aaa696f305ea001a3f639192bffcb417f08b155ca5523ec",
+    ".gitignore": "fef550c2c8307c34d3640487bc401307d70958150c5adf6c361e0dddbb4916cb",
+    "README.md": "74564d52e607a2e45052beb6cdcc12f40df4b2001fb444b6d51115c699e4d7d2",
+    "docs/api.md": "8633c708e66c4c41b8bcbfbab9b5e2f2deb247c2586a61bb8843668473b59ba2",
+    "docs/evidencias/painel-ensaio-desktop.png": "e15ad3f92ae4f9485d4bd4019420f16fc142059a5d7df9fd9c78f6d7edd524c4",
+    "docs/evidencias/producao.json": "8dd88646698235be32e4449cc1ca31261b490e15b522f5f21f16f4c23788fdfd",
+    "docs/fontes.md": "236b4aed566c037f00c8b63ece80e224e36a0608aaa1ef8e6f16fec690ff7001",
+    "docs/metodo.md": "45cc7ff154a2dfd73128fd7101f79386295cc0137f5ce713de6c02bb83c891d2",
+    "docs/nuvem.md": "c9808df0fc9f2f274a1fe517ff1c71fea44470145f9fa55df1b0add9b88104b6",
+    "docs/progresso-correcao.md": "7d2d24b729a3200838d3f9ae8da28cc68b5962225b264579b5c48f72cb6b39ff",
+    "docs/progresso-pico.md": "89be149705a87c213bbc9a731a7def674da695687230f21beb9a8165b0604aaf",
+    "docs/progresso-producao.md": "4bc9d75db804f57e268d8e2d84e63cd5a37e6280a818ca081f8ebc685404d42e",
+    "docs/progresso.md": "664605023a835199d353e6ddfd9e38d90e50795b4b5ae4eb1e99b43a06e4597b",
+    "docs/relatorio-completo-sistema-2026-10-24.md": "58ce23d598181551617f93b520934b3ed4c46d487559fe77f7d5edfe5110fa2b",
+    "docs/revisao-corrigida.md": "9482ea9fd93c60afbcd64b3fee74336ef8a55d7044ded2c75365551e3cdf5e55",
+    "docs/sistema.md": "aa87dfd60c8d7bfd1db86ddef2d9c32e52e703190d1d9b5170bb6527bae64906",
+    "docs/superpowers/plans/2026-10-24-apuracao.md": "0fbc98ed7829a76654aa6a204eee00aacaafb27becccbac9eb3339fe0801f380",
+    "docs/superpowers/plans/2026-10-24-correcoes-revisao.md": "9a69e355101556fdd6847738911d876cfae26479ac1401cad3084cf5702fd8af",
+    "docs/validacao.md": "2d9736e2969e2e4494e06e5031e5f5667a14838f4d915786550da3de33d1f629",
+    "index.html": "de263077921e9427662615c08e3eb6d94cb63946400a5b89518f19f351e4936e",
+    "package-lock.json": "9413de380042dd28addde3d271913e5757c1965e1aff62f273ce757a3901ca61",
+    "package.json": "5eac7fb1c9f3c66a231b0081d1045418480baf5976a61edf800c4d4273134f07",
+    "public/br-uf.geojson": "07c671aa87aa1ab296c446de6294df9827112782537b996c0a160284907e7c0f",
+    "scripts/backtest.ts": "3dd1d07a23cc4ac162fa3eb0e12357f8a85903ae7504a6449223a35450e2e75d",
+    "scripts/benchmark.ts": "30041cba8004494a83071bd02f4de992246337088ec7f919ab3a3cbf41670832",
+    "scripts/collect.ts": "7dc217c48e308a2c047c1c5b263e286e2bf58c9886aba93d2b742400c548f304",
+    "scripts/e2e-real.ts": "dfe7d09153ec3cc624d9581312c369b160b739e13e250ebb740ab5c7554f2240",
+    "scripts/holdout-national.ts": "dd233970ba6a98813371fefa3b57e64ba00ea7e0d2e9f55b7ce26505b6320a9d",
+    "scripts/holdout.ts": "c5af4883ed2ca4784587aa0bd25211b607034fd85042374d90128f36cd315f90",
+    "scripts/import-base.ts": "e164bd9720f96400a921d7cdeb30dd39dac54464b61307974f99bfddfea3f406",
+    "scripts/peak.ts": "dcc88b0910610ffa44d7fffdaf1a0f9a3254aa75c7c75a55774f106d207ae05f",
+    "scripts/prepare-base.ts": "a198735fbf7cfc87178c527daf6b362ec7fc4c8ea02782441f36002cc0deacf3",
+    "scripts/reconcile-base.ts": "3f47fe9e8ecba3ef7be2534944951cd684a514fdb7804e18cd3f12ad0fe60e14",
+    "scripts/run-local.ts": "05dfb1f4d78aa6b5f926e16f0506f2298ef291245425ac40608eacafbc26bc75",
+    "scripts/storage-budget.ts": "2a82356137c7aaea87ab7f31e9fb5b4163c20a3e4ca2e6c5a048c221d7e5463a",
+    "scripts/stress.ts": "29b31ee157b8ff44ad122131b72a461e7d37ea715dda70aa1d7944b019d8f45b",
+    "scripts/supervise.ts": "d40003c6a15d375fb01492b2d626f2555abbd9aaea52b21d18bc4cf903b34215",
+    "scripts/validate-live.ts": "b3ee57abc5c43c2c45b9809f4462ebf53acbd718fdaf6444082c0c473ab3832e",
+    "server.ts": "0ddf39109a047255e1fb783c83ed70a2a263844813126521efd7953e0db6923e",
+    "src/collector/base.ts": "f3365d2529855ce6d68e158cb7f8037aed5ff24f9593e3cc73ed79447ce2d55f",
+    "src/collector/ber.ts": "3d637f53001550db1bdc5add9256431bdfb89ffbea4c989b53fa3443520121be",
+    "src/collector/csv.ts": "c1ab2590eca3ce7483a25d8a8871823c0cd74c6de80d96d1dbd19784ab8fc1c3",
+    "src/collector/download.ts": "094cc2bfab441a076edd58c3924b22eab5f335a56fe1a7577403222170439529",
+    "src/collector/events.ts": "99943893b06aaf146587e1320ffa43ee517653a6f37ed2e6de380854f9362b86",
+    "src/collector/failure.ts": "ee8aa6db77223a0a70fe54d83655feec3da2c6d339d52af899579a9a15dae182",
+    "src/collector/health.ts": "bd681347faa52972d157c90423f7d2b1e45ee017dab8f1d671a7e80abea279a2",
+    "src/collector/http.ts": "4a1d2567f02beba9723e9a0c979b86076ef529016f9668ccdbf3e36f7f51c6b5",
+    "src/collector/local-lock.ts": "15161c632a2ada345d3d1ba1fc28afa9b7835359abbe6f10279510c59b042a99",
+    "src/collector/outbox.ts": "4a77b0c0058a8147c5cd727660f0b106242c5f93387aaa7ca26418cac9062961",
+    "src/collector/partition.ts": "78a1d2a055d34499320a63c2459f48f40b075d11e0bc482ef43061f9202b0b26",
+    "src/collector/provenance.ts": "80311e09948c39591e0750924a8cd612d1e8a0fe1ac180089950d13c1de4e12a",
+    "src/collector/publication.ts": "c8725395d189a1a20b8da56800d656aec6584ddecf1c621ea8a63c27c4c96631",
+    "src/collector/scanner.ts": "e67a1fe470e0d0167ff1e0883aadeb911693302f02d43173763aab92c45f8dc3",
+    "src/collector/schedule.ts": "65a08264c5b13a36b85668faefc9c16fe4ced1d8b054ee4fc4adbd93a52d4f53",
+    "src/collector/store.ts": "38cc68f137b007b79cb11713db275298631e24132bd6c5f1b5833b5cd91324ee",
+    "src/collector/tse.ts": "89c81d2dda8d88f781651c01a99e3c12baeff5f1813eca172706791543608ebc",
+    "src/collector/zip.ts": "a3aab965f8a9a5b0a7405e2ac3364e7bc8177b6f3b089de1a891666dd4ef5e86",
+    "src/core/change.ts": "17242f4f3e9d3efcea21c3efd3f4791240ca08e469577115a7d8a97d70bba9c2",
+    "src/core/codec.ts": "a14357b5ca3910c8b19fce39bcbd01ce7571aade8534d909f759d279c86de7f9",
+    "src/core/decision.ts": "4f8265b2b75610385802cbdfca365db7269d0c95d3eda7d36b853a89b7285de7",
+    "src/core/demo.ts": "fa54361e63943cd80a5a466a809cc4ac35da96e430e7a20cfc19f5fbb3c0fd3c",
+    "src/core/evaluation.ts": "1d4886aac37d5725a85c8bc42f1e975ccd9f37bcaf247716243aa241c1be59d8",
+    "src/core/history.ts": "26bc41848dc62812fc0be6a044567d69ab023cb4e91e560d5d286653f1f2e0c0",
+    "src/core/ledger.ts": "51e9e9b9b557c759d2c16ea901f65a8b0786152e2aaa521427ad45e47dc3a2bc",
+    "src/core/model.ts": "f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd",
+    "src/core/official.ts": "2f93f0bc193e2c54125baec3631d2f8944705969e96cfeb50d4718384ec61243",
+    "src/core/snapshot.ts": "3c3b39652cd55fb19191af2f64c15271a305a4f0e706c45ef4bf4aad9db28360",
+    "src/core/territories.ts": "61143b586360410f19b2063c3653a420014874fc90901b27ff7e0968f6606e3a",
+    "src/core/types.ts": "124cc6873d4f7e9c927205865b4a9ade2ee58805d6b4833e324ae36881f8ef5f",
+    "src/core/validation.ts": "f2d0e82f2550b8950e3abc303133bd059803d002dfa21700cd7b34eaf86d521a",
+    "src/ui/history.ts": "231be588ffe697b01b10b12605ebe0b46fd9bbe06eaad0f793eb2d446cc588d1",
+    "src/ui/main.ts": "2dd7fd8f9945385d9a678c1e62c825595d8038b189f50832126ae82cbb59436d",
+    "src/ui/state.ts": "989619c8ec91f8be609f6e73f9fc01c21897ed54bb5f5070a87b9e5fdb306fb8",
+    "src/ui/style.css": "1c13c82748dd274066e57440b0ca35bd8047b2c9f74680d9757ec7f4ccfe01ae",
+    "tests/base.test.ts": "934ada3cc8ae7ab829b18194a77127db456ebc5187ff53781b072055aa777384",
+    "tests/change.test.ts": "81c63986eec60ecfd198b7a1307e323b58765b90e63b48b505dffc7ec017ceb1",
+    "tests/cloud.test.ts": "66c5b56db65dd561179ac7bdfd6f4a6d75c51b9867c2d05523fc00a63fec887b",
+    "tests/collector-flow.test.ts": "824d135ac6eb45168ad7bae086125b4bc6e718cea54dee1ede9d9553e87e9310",
+    "tests/collector.test.ts": "91b4ce20daac8dd05d17e704aa3ca5f0495ce70884f0a9ffc9132939f38b2d9a",
+    "tests/core.test.ts": "103099fc40601387a30f506ef9a8aa6608f619eacde605bbae3a668fec8c2d65",
+    "tests/decision.test.ts": "de7e35e3ec0e35ba978e85db8c4dc3f594088a64e1965af5b505d41cad6dbed3",
+    "tests/delivery.test.ts": "3f38a86ba8dd078ad7cc066f3de5b1e193978ece74afbec43efbf67b39bac04c",
+    "tests/evaluation.test.ts": "b59121055d1b90b11fd7dcc6d3124d3a7a3d47d635d53509b3955d0a3dd97a9c",
+    "tests/failure.test.ts": "2e69eab8ae0f16d272155cc78c8857b3f69d1d2cdb94cb24c08cb10924d3a6d9",
+    "tests/fixtures/ac-01066-0004-0077-bu.dat": "e987c40fc752fef52b3e03bea6fbe2f1893c4b2e94309f4f5c933319d8ed8985",
+    "tests/fixtures/ea16-ac-2t.json": "55460f928784a3a3a29a425b3448ab67b523665cd4615b92d57d2712f27cff9c",
+    "tests/fixtures/ea20-2026-2t-before.json": "d57a0b93daff57aca9767c05cf2c9b10a293dc5eea42be96cb1cfd3993c131c9",
+    "tests/fixtures/ea20-2026-2t-before.jws": "eca82022f338f6bf3f5d51f170e6b9f170f5ecdba2aca5e7a42ea06e7a6485eb",
+    "tests/hierarchy.test.ts": "8ee9f96c9b6112f23bd8bcf933c55fdd90ba0912e2c927c43a7ded032e915820",
+    "tests/history.test.ts": "30aafa6e0eda2ec5af7d5f242febfee8c7a39d3e015849fef9c4902fd75be26f",
+    "tests/partition.test.ts": "9ae2abbbc6bf642078e5a331cc025b7df6642c9d4bfccad8bcb4ba824bdb66d1",
+    "tests/provenance.test.ts": "dc8348c1704a5c8be685af01dad6a92f0e53341a90d489e026d1b90bb092cfcb",
+    "tests/publication.test.ts": "7bc4f431b7117d1eb1f618d0bcae8c94978eb9cbce3974711d07be93c1f8c149",
+    "tests/recovery.test.ts": "03401e40a128eaea717e16a1aa5ab1aab1dffe85a481b00a8fa198616c3d4d2b",
+    "tests/regressions.test.ts": "9927f552cd2848fd0e244c0f651506ae6bb561b99409420fb964e65a93ddff99",
+    "tests/scanner.test.ts": "05afc7e4ea1be823d78585db43ad24cb81e7792f4628a1a38fca3be190e2a7aa",
+    "tests/schedule.test.ts": "39b3eef3240a3fc52481da735eb0b0df4c9bbe7cf6c1037c7f70881a6d42175a",
+    "tsconfig.json": "d4b38123ed8699f03997258ddb0e3d88b97f9645f2aa2172226e05f17185db75",
+    "worker/index.ts": "c7efeaf286adef5bec0f092e91243e07e0417f6a7e94d28875d45d72c544501f",
+    "worker/schema.sql": "504d799e4410546d788d139917435149001cbb1fad5151a938fab91e3e9e8eec",
+    "worker/wrangler.toml": "0202b6b4d2d1bd920297ff4e3d4ddae50efa723c49ed981aceb4c76536dfd1ef",
+    "worker/wrangler.toml.example": "667aeebf0abe0962e70941d8fa9d0ec02f4a7f61f8b36bfd19d38e3de3cab206",
+    "data/verify-final-20261024.log": "dbd74fd7c0bfcafcbe148ed68e02cac705301205c661c035d79f316d62549d40",
+    "data/peak-report-remote-resume.json": "60629135ae0d6abfdb8937049b33dc9471b5b3fe50a904441fa46bab81100481",
+    "data/e2e-real-report.json": "74b60e868093e234fa07f8e331f055a8945209b51524f086c106162c7ea3bd88",
+    "data/holdout-national-2022/report.json": "8b32b99f2dc45a9d5b3c47e645a97c834bbcea6c16ae1f8ed6189517f3dfd3cb",
+    "config/calibracao-faixa-2022.json": "c217ca75fd23cb9a903fc8a8aa4b7762bb4eedb040c0b2156d95360534a97204",
+    "config/ordem-1t-2026.json.gz": "079bae7eeec2405ed2b8aa41caa325c03901d309d941537cb48d43d65d73cf4a",
+    "docs/analise-fontes-projecao-2026-10-24.md": "4b7120dd1cc547025dde7d0b822b454fc3de0727672decb5aaf6cd99d02a735f",
+    "docs/estado-execucao-2026-10-24-noite.md": "f7620d222386ea255762943802e22ee7f14bb1ae458156124d60285f210d3942",
+    "docs/progresso-modo-municipal-2026-10-24.md": "af916eb4d8c74537c299fe5a0ddbff5712bf500ed4f5aa15c5f60dce73f20dcd",
+    "docs/revisao-municipal-2026-10-24.md": "4e82d5155ac1cd1489ce9bee028ddb6cf87de5971c1217bcb06d5f52c3b32d11",
+    "scripts/prepare-order.ts": "bb531e41fca391974c4e7f2ad2db50a38158d5cf3f410ed387e068900060b582",
+    "src/collector/municipal.ts": "6ca9aaf95a3999ce4028543cadfedf16af7b73d2cdb4c7ab939826622ae25fa0",
+    "src/collector/receipt-order.ts": "27cdf7d3d9574744ecf2497c9d4e4ac87ed72e2547422769205c73e0c7084130",
+    "tests/municipal.test.ts": "5d4a809a4dde1e36aa6370cbc31890d26daf457113ae78c0fa9d800d01ca56cf",
+    "tests/receipt-order.test.ts": "147a81799a3f13df783d93a2e75be64fd3aa910a37ab7112bbfa9df750a83843",
+    "tests/uncertainty.test.ts": "ca662d1e7a3194465621e395aad98da28b43c8bd643ad6d8e56b78b0fdb35acb",
+    "data/tests-municipal-final.log": "76ca588d5acf9b6091e8dff19d0772169758a62c916df1f7d3a6139b30f24d71",
+    "data/build-municipal-final.log": "6d9b438bf7ae0efa0ea2247e3281f1030d7ed7429d9d1fecea577d6e321f0459",
+    "data/municipal-order-verified.json": "a26451b80fafdb830ea4b77d3c629869f4fa2811cb6de0fd529e940a55e301c1"
+  },
+  "externalDeploymentVerified": true,
+  "statisticalNationalCalibrationVerified": false,
+  "production": {
+    "url": "https://apuracao-presidente-2026.phdtemiranda.workers.dev",
+    "repository": "https://github.com/magisph/apuracao-presidente-2026",
+    "workerVersion": "8d7a7095-bb74-409f-aeeb-35bb211d9a4a",
+    "d1Id": "0827acf3-6d7f-4351-b361-4e19e1fad55f",
+    "verifiedAt": "2026-10-24T15:20:16.309Z",
+    "integrity": {
+      "checkedAt": "2026-10-24T15:11:09.777Z",
+      "batchCreated": 201,
+      "idempotentRepeat": 200,
+      "immutableConflict": 409,
+      "fencedOldEpoch": 409,
+      "incompleteSnapshotRejected": 409,
+      "latestUnchanged": "live-1",
+      "municipalities": 22,
+      "probeContainsVotes": false
+    },
+    "runtime": {
+      "checkedAt": "2026-10-24T15:20:16.309Z",
+      "root": "https://apuracao-presidente-2026.phdtemiranda.workers.dev",
+      "snapshot": "live-3",
+      "source": "https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.jws",
+      "officialVotes": 0,
+      "observedBUs": 0,
+      "baseHash": "2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff",
+      "modelVersion": "transfer-logit-v2-coherent",
+      "modelHash": "5ae9c873a8996d5c590dde80d5d8368ee53ed067a41829e2fe430e82e7a02ae3",
+      "healthState": "ok",
+      "checkedSourceAt": "2026-10-24T15:20:05.867Z",
+      "groups": {
+        "g1": {
+          "checkedAt": "2026-10-24T15:19:39.025Z",
+          "queue": 0,
+          "state": "ok"
+        },
+        "g4": {
+          "checkedAt": "2026-10-24T15:19:48.955Z",
+          "queue": 0,
+          "state": "ok"
+        },
+        "g2": {
+          "checkedAt": "2026-10-24T15:19:39.800Z",
+          "queue": 0,
+          "state": "ok"
+        },
+        "g0": {
+          "checkedAt": "2026-10-24T15:19:37.475Z",
+          "queue": 0,
+          "state": "ok"
+        },
+        "g3": {
+          "checkedAt": "2026-10-24T15:19:45.130Z",
+          "queue": 0,
+          "state": "ok"
+        }
+      },
+      "privateIngestStatus": 200,
+      "municipalitiesSP": 645,
+      "historyVersions": 3
+    },
+    "chainTestRun": 40105848462,
+    "automaticallyDispatchedRun": 40106029417,
+    "validationRun": 40106783406,
+    "deadline": "2026-10-26T12:00:00Z",
+    "pcPhysicallyOffTested": false,
+    "fullElectionLoadTested": true,
+    "fullElectionLoadScope": "isolated Worker/D1 with the production Worker code and synthetic votes on real geography; not the real 25/10 peak"
+  },
+  "peakNational": {
+    "runId": "peak-1792863040184",
+    "completed": true,
+    "fullNationalRoundTrip": true,
+    "records": 499248,
+    "batches": 3902,
+    "recordsPerSecond": 1472.2711812634332,
+    "recoveryMs": 42247.1176,
+    "concurrentReads": {
+      "clients": 10,
+      "requests": 800,
+      "ms": 12529.354399999953
+    },
+    "remotePublicationMs": [
+      {
+        "fraction": 0.1,
+        "ms": 11868.9957
+      },
+      {
+        "fraction": 1,
+        "ms": 11253.309799999995
+      }
+    ],
+    "productionWrites": 0
+  },
+  "realEndToEnd": {
+    "kind": "real-first-round-2026-end-to-end",
+    "uf": "ac",
+    "contest": "3220",
+    "completed": true,
+    "collection": {
+      "sections": 2270,
+      "totalized": 2270,
+      "totalizedMembers": 2411,
+      "notTotalized": 0,
+      "ms": 907908.8141000001,
+      "totals": {
+        "a": 134770,
+        "b": 302807,
+        "other": 31512,
+        "blank": 5579,
+        "null": 13662
+      }
+    },
+    "official": {
+      "a": 134770,
+      "b": 302807,
+      "valid": 469066,
+      "blank": 5579,
+      "null": 13662,
+      "countedSections": 2270,
+      "totalSections": 2270,
+      "technicalNull": 23
+    },
+    "matches": {
+      "a": true,
+      "b": true,
+      "blank": true,
+      "null": true,
+      "sections": true,
+      "nominal": true
+    },
+    "roundTrip": {
+      "batches": 18,
+      "records": 2270,
+      "ms": 7567.755400000024,
+      "equal": true
+    },
+    "productionWrites": 0
+  },
+  "holdoutNational": {
+    "kind": "national-real-counts-reconstructed-final-receipt-order",
+    "files": 56,
+    "accepted": 472028,
+    "rejected": 0,
+    "electorateDifferences": 49710,
+    "parameterTuningPerformed": false,
+    "calibrationSufficient": false,
+    "modelSha256": "5ae9c873a8996d5c590dde80d5d8368ee53ed067a41829e2fe430e82e7a02ae3",
+    "samples": [
+      {
+        "target": 0.01,
+        "errorPP": 0.46970564187700514,
+        "covered": true,
+        "widthPP": 16.228946765994497
+      },
+      {
+        "target": 0.03,
+        "errorPP": 0.293740737103132,
+        "covered": true,
+        "widthPP": 17.236966379901226
+      },
+      {
+        "target": 0.05,
+        "errorPP": 0.1869351780322437,
+        "covered": true,
+        "widthPP": 15.296787863325633
+      },
+      {
+        "target": 0.1,
+        "errorPP": 0.13609575243701544,
+        "covered": true,
+        "widthPP": 16.819967932181214
+      },
+      {
+        "target": 0.15,
+        "errorPP": 0.13020191375507917,
+        "covered": true,
+        "widthPP": 14.965646948526656
+      },
+      {
+        "target": 0.2,
+        "errorPP": 0.11174247699835549,
+        "covered": true,
+        "widthPP": 14.841676665917774
+      },
+      {
+        "target": 0.5,
+        "errorPP": 0.024972253811783585,
+        "covered": true,
+        "widthPP": 8.770126321142385
+      },
+      {
+        "target": 1,
+        "errorPP": 0.00005929216740918619,
+        "covered": false,
+        "widthPP": 0
+      }
+    ]
+  },
+  "preparedMunicipal": {
+    "branch": "modo-municipal",
+    "baseMain": "d6eaf574f8de82ca16f398f3ba570cf179dad4ab",
+    "codeHead": "5bad4ab98b1dfbe2db94dfe08256acd2270f08f6",
+    "productionVerified": false,
+    "order": {
+      "verifiedAt": "2026-10-24T23:19:05.466Z",
+      "file": "config/ordem-1t-2026.json.gz",
+      "bytes": 1142269,
+      "sha256": "079bae7eeec2405ed2b8aa41caa325c03901d309d941537cb48d43d65d73cf4a",
+      "baseSha256": "2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff",
+      "units": 499248,
+      "usableReceipts": 499206,
+      "missing": 42,
+      "ufs": 28,
+      "realLoaderVerified": true,
+      "provenance": [
+        {
+          "uf": "AC",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AC_051020261403.zip",
+          "sha512": "c095164588a0ad4f46717e081f51eab226f78365325629124672ba8ea044c8e2266028e8456a9e5188ab763c1556160cc8d175b2aab361c5f81544e393c99ab1",
+          "rows": 2411
+        },
+        {
+          "uf": "AL",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AL_051020261403.zip",
+          "sha512": "dc4340c5d6ff227b6398bd0ed5416a42fac6f182f5775b236e4e5be6358d9eab82ded3ecfe33c8326f0a4caee38bd048635e8f14aff8893fe498de6c641e2b7f",
+          "rows": 7246
+        },
+        {
+          "uf": "AP",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AP_051020261403.zip",
+          "sha512": "bd40faf189a3ba0462d8efc73216bf60480fda36b3e7d6e144b49d05e54e0415494d06a7858ccf4926cd2570059cdf6518b976e6129c243f44cb9708107b0769",
+          "rows": 1971
+        },
+        {
+          "uf": "AM",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AM_051020261403.zip",
+          "sha512": "143619aaf27787f27435bc6b78961d289ac0bc9ec6683a678cc319fa1d68eef0611aad9e608d7493a100bafe83f46516e3155dc4b3e62717c5870fb992239f5d",
+          "rows": 8577
+        },
+        {
+          "uf": "BA",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_BA_051020261403.zip",
+          "sha512": "8fc0b0c6e926af2c9554de33d5ed1f7c4d376cc2e1655970e78aa8498c71c7caef3d4a4adfcc2f3c4989c9783d2917f8478404a9789bcccbb9bdc366a8024e5e",
+          "rows": 37950
+        },
+        {
+          "uf": "CE",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_CE_051020261403.zip",
+          "sha512": "0ac4f8dbcd6eb06ed3e67b71d64fdb36909a885da32e765c9ae966c02ed48dcee57f82b3a95dfa3b1dd586e7f057ed556a991fe9e2dc4ae117e72caa2359fabf",
+          "rows": 25650
+        },
+        {
+          "uf": "DF",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_DF_051020261403.zip",
+          "sha512": "10916bdfc73018dab34d21dbb1f7fa49d33921a6d8de9e283a2b4b6d8d7ce6c02af4e5cff948f17cab726195b372ee84f2177ab5756dff04e0f2d71c759d4572",
+          "rows": 7050
+        },
+        {
+          "uf": "ES",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_ES_051020261403.zip",
+          "sha512": "fb3dc71fccd1528f091ead2caa11a6182e25d581aaaf565519bcd6884e5827d868a60dad74a77df51593a2bcba692a0bc4dc777e6fa6782a27cf19782d8c7f31",
+          "rows": 10123
+        },
+        {
+          "uf": "GO",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_GO_051020261403.zip",
+          "sha512": "995aa51719659a4f22f4e9a9a904f545be3e57112fd204ca35dc697a76950222c244477284b28fb74bde65d45df3f20855f2c40fe436f33afc885917fc73c394",
+          "rows": 16226
+        },
+        {
+          "uf": "MA",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MA_051020261403.zip",
+          "sha512": "28eda5cc72f2d7f29b32282e72461fd93baa7f4da430e1f624128aeb3d83326f25b26efda431c2669e9a23d9d9b76a8f62e27f7a616b54ae5f8e1630a1775134",
+          "rows": 19794
+        },
+        {
+          "uf": "MT",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MT_051020261403.zip",
+          "sha512": "0b97fc665251f8a82d5b43938245bbc2b39b680c6053626abf5d94cc67b0105aed3d3c9bc97a6366507e7e409d81b8d5c1f5c15b2f95542e8d6e3e788818ab1d",
+          "rows": 8975
+        },
+        {
+          "uf": "MS",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MS_051020261403.zip",
+          "sha512": "e62c150f16fff1a4e6a08ba36e3f7d5b3820a01bb2cf5131df8426c462bb8edac5cb01584770271e356a9e56a8f2d59edf7516f795ce955928b53e3a853361a4",
+          "rows": 7284
+        },
+        {
+          "uf": "MG",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MG_051020261403.zip",
+          "sha512": "c0d4a82adb1fa1c89447c8a19448c588bad2597d4509c04a1b1671b835b9160e9c835091b1000180d1ad3a329dd36ce3bee1d57f4589a4e96d8c2601a99a80c6",
+          "rows": 54193
+        },
+        {
+          "uf": "PA",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PA_051020261403.zip",
+          "sha512": "7ec84395ef9ce10fcfeedc9236b9fb93de80d7d278b56b074d0538009ed53e4fff695a627dd848028e91ef8cd1a5a36a1e6fe2318b0adac909c741739371d788",
+          "rows": 22082
+        },
+        {
+          "uf": "PB",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PB_051020261403.zip",
+          "sha512": "22784224b1e752b10371a22cc5cdb381b78c9a3b694da02a71867db116adf39d6b08e52f9cd69888fa708c2be12a3a35d24acf78a3b2f601e2c98561ae496812",
+          "rows": 10845
+        },
+        {
+          "uf": "PR",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PR_051020261403.zip",
+          "sha512": "762372bbafff59673da579e81a31536fe990b90e81dd92277af12e395dcb23784e7b6eccdb8826b214c9772edf997bd6747ff8ab87bd40b17049bafca1c5b10b",
+          "rows": 27336
+        },
+        {
+          "uf": "PE",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PE_051020261403.zip",
+          "sha512": "8d01dd88ba42adf623d3ec23a934691b3cd9ae4e90a7093877592d425d5f79aafc20f1cc419e9de73265116f1c908555c7c8b42015b1f72dadb4a09378da7cfa",
+          "rows": 22091
+        },
+        {
+          "uf": "PI",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PI_051020261403.zip",
+          "sha512": "c77cafd73117432124f789dc75fcb2401338a82dfae707ea4626639c980c318c25555b53fd5a2ad3604aec8bce76012de3ef7102c0cd9e1460b1d7f8f05f8c8a",
+          "rows": 11261
+        },
+        {
+          "uf": "RJ",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RJ_051020261403.zip",
+          "sha512": "15fec8c7104496cb39379030cf3fc732801e80405fe0efac7985164bdf72a5decdac3a34ae3fcd7d39e44a9be12674bc5961685a67a9d1c0c38c0c7e1d45719d",
+          "rows": 38738
+        },
+        {
+          "uf": "RN",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RN_051020261403.zip",
+          "sha512": "8c306c4501a9c5f9bdaa17f416c07280a24563f68f65d64e51843bc0b5377bacd534417396200772c471e412f9e4981273432f104ee1e2f7f3681399fd95b820",
+          "rows": 8336
+        },
+        {
+          "uf": "RS",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RS_051020261403.zip",
+          "sha512": "b6dd056af20ce8768b2a439b1929102a077f0931f966c5314f706b4c98eb6e39549f8b143aee3808c22490a9d9e3f7dc24af925ea421fa1ae2d896283ff45732",
+          "rows": 27738
+        },
+        {
+          "uf": "RO",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RO_051020261403.zip",
+          "sha512": "883b0c3cdf8047d9776b2409abecc0ed287a8a6a7f3657a860701a2b9999664a8a6c8012db96238ed1476899120dd2dc62167a3e8924e9d4b1db686c2302fcaf",
+          "rows": 4941
+        },
+        {
+          "uf": "RR",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RR_051020261403.zip",
+          "sha512": "4cde1919c20ba0940a9b5fc83422e93248b28fb494510205ae3862b61340a9e8d5d297444af84618c84ec7bb7f1dbc7c487b51e22377c3cde3f71bc39a8dc5c6",
+          "rows": 1627
+        },
+        {
+          "uf": "SC",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_SC_051020261403.zip",
+          "sha512": "618c1cacf80bc2964d3bb5e6274ba3e2adeed853077083bc01004e5110e79615868cf3c39b490e283c181c716275d4473da35d11f407111f4170fc91a8a93db7",
+          "rows": 17558
+        },
+        {
+          "uf": "SP",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_SP_051020261403.zip",
+          "sha512": "00c8b12de9077c8263c87ba91d1300e230719bd1ad27e7f37131478d8e3b4bc9c66b727b3e30c73c89799e136c329db45b85e6d037874ea8fa166d74f26ca403",
+          "rows": 103904
+        },
+        {
+          "uf": "SE",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_SE_051020261403.zip",
+          "sha512": "dd1afedc6867ca7828becbe52178cda4e9104d2966fd3cad8c28d4f4ff7c86270dcc5c24cb3904b02a0f0f5a4f7308bb2b7d9f9d60775092f55de136204b9d40",
+          "rows": 6067
+        },
+        {
+          "uf": "TO",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_TO_051020261403.zip",
+          "sha512": "b936b450693c00741226bd1b6c09843c6671e41abafa393ef31606a7038272011b9030ec8d62a8f61d7ff31f532b7979321cac456bef3b44925e0b00026bc614",
+          "rows": 4490
+        },
+        {
+          "uf": "ZZ",
+          "url": "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_ZZ_051020261403.zip",
+          "sha512": "001ae12d79a7d5f9471c0a8bb3e09b5cb6633be598683db74b0ab08c0002f2c764cb9fde9c0470c6414985ce47cd01b00c343438d9c914f3f792a1975b400a55",
+          "rows": 2673
+        }
+      ]
+    },
+    "calibration": {
+      "nationalShock": 0.03,
+      "ufShock": 0.035,
+      "coveredCheckpoints": 14,
+      "requiredCheckpoints": 14
+    },
+    "independentReview": {
+      "reviewedHead": "47dd11c",
+      "importantFindings": 6,
+      "criticalFindings": 0,
+      "correctedWithRegressionTests": true,
+      "reviewRepeated": false
+    },
+    "browser": {
+      "belowOnePercentHidden": true,
+      "graph": true,
+      "map": true,
+      "territoryList": true,
+      "fixtureOnly": true
+    },
+    "hashBasis": "Git blob bytes for tracked files; filesystem bytes for explicitly listed local evidence logs",
+    "deploymentDryRun": true,
+    "mergePushAwaitingUserConfirmation": true
+  }
+}
