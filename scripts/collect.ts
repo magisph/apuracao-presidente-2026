@@ -22,7 +22,7 @@ import { DurableOutbox } from "../src/collector/outbox.ts";
 import { collectionHealth } from "../src/collector/health.ts";
 import { projectHierarchy } from "../src/core/model.ts";
 import { verifyResourceHashes } from "../src/collector/provenance.ts";
-import { collectionStopAt } from "../src/collector/schedule.ts";
+import { collectionStopAt, fetchBeforeDeadline } from "../src/collector/schedule.ts";
 import type { SectionBase, Observation, Snapshot } from "../src/core/types.ts";
 
 const args = process.argv.slice(2),
@@ -37,7 +37,8 @@ const endpoint = process.env.INGEST_URL,
   owner = `${process.env.GITHUB_RUN_ID ?? "local"}-${shard}-${randomUUID()}`;
 if (endpoint && (!token || !endpoint.startsWith("https://")))
   throw Error("HTTPS ingest endpoint and secret required");
-const client = new ReliableClient({ rps: shard === "coordinator" ? 5 : 15 });
+const guardedFetch=fetchBeforeDeadline(stopAt);
+const client = new ReliableClient({ rps: shard === "coordinator" ? 5 : 15, fetch:guardedFetch });
 const config = discoverElection(
   await client.official(`${TSE}/comum/config/ele-c.json`),
   IDENTITY.election,
@@ -101,7 +102,7 @@ const groupHealth: Record<
   { checkedAt: string | null; queue: number; state: "ok" | "stale" | "waiting" }
 > = {};
 const post = async (path: string, body: unknown) => {
-  const r = await fetch(`${endpoint}${path}`, {
+  const r = await guardedFetch(`${endpoint}${path}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -156,7 +157,7 @@ const batches = async (group: string) => {
   let after = remoteCursors[group] ?? 0;
   for (;;) {
     await renew();
-    const r = await fetch(
+    const r = await guardedFetch(
       `${endpoint}/ingest/batches?shard=${group}&after=${after}`,
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -217,7 +218,7 @@ if (endpoint) {
     remoteCursors[shard] = b.cursor;
   }
   if (shard === "coordinator") {
-    const sequenceResponse = await fetch(`${endpoint}/ingest/sequence`, {
+    const sequenceResponse = await guardedFetch(`${endpoint}/ingest/sequence`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(30000),
     });
@@ -226,7 +227,7 @@ if (endpoint) {
       sequence,
       ((await sequenceResponse.json()) as { sequence: number }).sequence,
     );
-    const r = await fetch(`${endpoint}/api/latest`);
+    const r = await guardedFetch(`${endpoint}/api/latest`);
     if (r.ok)
       sequence = Math.max(sequence, ((await r.json()) as Snapshot).sequence);
   }
@@ -260,7 +261,7 @@ do {
     if (!(await deliverPending())) continue;
     if (shard === "coordinator") {
       if (endpoint) {
-        const r = await fetch(`${endpoint}/ingest/health`, {
+        const r = await guardedFetch(`${endpoint}/ingest/health`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: AbortSignal.timeout(30000),
         });
