@@ -11,7 +11,7 @@ export async function* observationBatches(data:{baseHash:string|null;records:Obs
     const middle=Math.ceil(records.length/2);
     yield* encode(records.slice(0,middle)); yield* encode(records.slice(middle));
   }
-  for(let start=0;start<data.records.length;start+=128) yield* encode(data.records.slice(start,start+128));
+  for(let start=0;start<data.records.length;start+=1024) yield* encode(data.records.slice(start,start+1024));
 }
 export interface PendingBatch { id: string; payload: unknown }
 export class DurableOutbox {

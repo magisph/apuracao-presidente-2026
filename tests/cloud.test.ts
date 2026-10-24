@@ -331,6 +331,19 @@ test("content-addressed pages are compressed once and referenced by multiple imm
   );
   assert.equal(((await result.json()) as any[])[0].name, "Porto Walter");
 });
+
+test('large-batch recovery can request bounded pages without changing the legacy default',async()=>{
+  const e=env();
+  for(let i=0;i<25;i++) await e.DB.prepare('INSERT INTO batches(shard,id,hash,payload,created_at) VALUES(?,?,?,?,?)')
+    .bind('g0',`bounded-${i}`,'hash','{}',100).run();
+  const read=async(query:string)=>worker.fetch(new Request(`https://test/ingest/batches?shard=all${query}`,{headers:{Authorization:`Bearer ${e.INGEST_TOKEN}`}}),e);
+  const first=await(await read('&limit=10')).json() as any[];
+  assert.equal(first.length,10);
+  const next=await(await read(`&limit=10&after=${first.at(-1).cursor}`)).json() as any[];
+  assert.equal(next.length,10);assert.equal(next[0].cursor,11);
+  assert.equal((await(await read('')).json() as any[]).length,25);
+  assert.equal((await read('&limit=0')).status,400);
+});
 test("concurrent content-addressed pages publish atomically and fenced lease blocks snapshot", async () => {
   const e = env(), post = async (path: string, body: unknown) => worker.fetch(request(path, body), e);
   const lease = (await (await post("/ingest/lease", { shard: "coordinator", owner: "one" })).json()) as any;

@@ -159,11 +159,12 @@ const renew = async () => {
 };
 const batches = async (group: string) => {
   const out: any[] = [];
+  const pageLimit=10;
   let after = remoteCursors[group] ?? 0;
   for (;;) {
     await renew();
     const r = await guardedFetch(
-      `${endpoint}/ingest/batches?shard=${group}&after=${after}`,
+      `${endpoint}/ingest/batches?shard=${group}&after=${after}&limit=${pageLimit}`,
       {
         headers: { Authorization: `Bearer ${token}` },
         signal: AbortSignal.timeout(30000),
@@ -175,7 +176,7 @@ const batches = async (group: string) => {
       if (b.payload?.encoding === "gzip-base64")
         b.payload = JSON.parse(await gunzipText(b.payload.data));
     out.push(...page);
-    if (page.length < 100) break;
+    if (page.length < pageLimit) break;
     after = page.at(-1).cursor;
   }
   return out;

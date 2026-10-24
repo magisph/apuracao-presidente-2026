@@ -198,19 +198,21 @@ export default {
       }
       if (request.method === "GET" && path === "/ingest/batches") {
         const shard = url.searchParams.get("shard"),
-          after = Number(url.searchParams.get("after") ?? 0);
+          after = Number(url.searchParams.get("after") ?? 0),
+          limit = Number(url.searchParams.get("limit") ?? 100);
         if (!safe(shard)) return json({ error: "invalid shard" }, 400);
+        if(!Number.isSafeInteger(limit)||limit<1||limit>100) return json({error:'invalid batch page limit'},400);
         const rows =
           shard === "all"
             ? await env.DB.prepare(
-                "SELECT serial AS cursor,shard,id,payload,created_at FROM batches WHERE serial>? ORDER BY serial LIMIT 100",
+                "SELECT serial AS cursor,shard,id,payload,created_at FROM batches WHERE serial>? ORDER BY serial LIMIT ?",
               )
-                .bind(after)
+                .bind(after,limit)
                 .all()
             : await env.DB.prepare(
-                "SELECT rowid AS cursor,shard,id,payload,created_at FROM batches WHERE shard=? AND rowid>? ORDER BY rowid LIMIT 100",
+                "SELECT rowid AS cursor,shard,id,payload,created_at FROM batches WHERE shard=? AND rowid>? ORDER BY rowid LIMIT ?",
               )
-                .bind(shard, after)
+                .bind(shard, after,limit)
                 .all();
         return json(
           rows.results.map((r) => ({

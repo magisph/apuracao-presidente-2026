@@ -134,7 +134,9 @@ test('large municipal update is split into transport-sized durable batches',asyn
     const andamento=progressFixture(5000);andamento.abr[0].s.ts='5000';andamento.abr[0].e.te='1500000';
     await run(dir,'g0',false,201,{andamento,municipal:full});
     const attempts=(await readFile(join(dir,'attempts.ndjson'),'utf8')).trim().split('\n').map(x=>JSON.parse(x));
-    assert.ok(attempts.length>1);const {gunzipText}=await import('../src/core/codec.ts');let count=0;
+    assert.ok(attempts.length>1);
+    assert.ok(attempts.length<=6,`large municipal update amplified into ${attempts.length} writes`);
+    const {gunzipText}=await import('../src/core/codec.ts');let count=0;
     for(const attempt of attempts){assert.ok(Buffer.byteLength(JSON.stringify(attempt))<89000);count+=JSON.parse(await gunzipText(attempt.payload.data)).records.length;}
     assert.equal(count,5000);
   } finally {await rm(dir,{recursive:true,force:true});}
