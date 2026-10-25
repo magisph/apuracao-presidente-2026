@@ -189,6 +189,7 @@ main {
   font-weight: 500;
 }
 .install-status { color: #a3a3a3; font-size: 12px; margin: 0 0 16px; }
+.screen-updated { display: none; }
 [hidden] { display: none !important; }
 h1 {
   font-size: 26px;
@@ -283,6 +284,7 @@ h1 {
   font-weight: 500;
   color: var(--blue);
 }
+.projection-label { font-size: 9px; letter-spacing: 1px; color: #aaa; margin-top: 12px; }
 .right .projection-value {
   color: var(--red);
 }
@@ -938,4 +940,88 @@ body {
     flex-direction: column;
     gap: 4px;
   }
+}
+
+/* Presentation uses the same live/replay state and polling as the regular panel. */
+.presentation .topbar { height: 62px; padding: 0 24px; }
+.presentation .top-date,
+.presentation #mode,
+.presentation .eyebrow,
+.presentation #install-app,
+.presentation #refresh,
+.presentation .section-nav,
+.presentation .territories,
+.presentation .replay,
+.presentation .bottom-grid,
+.presentation .map-tools,
+.presentation .map-controls { display: none !important; }
+.presentation .screen-updated { display: inline; font-size: clamp(12px, .9vw, 18px); color: #bbb; }
+.presentation .badge { font-size: clamp(11px, .8vw, 16px); }
+.presentation main { max-width: none; padding: 14px 24px; }
+.presentation .page-title { position: absolute; top: 12px; right: 24px; margin: 0; z-index: 2; }
+.presentation .top-right { margin-right: 250px; }
+.presentation #presentation { font-size: 14px; }
+.presentation .notice { font-size: clamp(13px, 1vw, 20px); }
+.presentation .scoreboard { grid-template-columns: minmax(0,1fr) minmax(170px,.5fr) minmax(0,1fr); padding: 22px 28px; }
+.presentation .avatar { display: grid; width: clamp(68px, 6vw, 125px); height: clamp(68px, 6vw, 125px); }
+.presentation .candidate { gap: clamp(12px, 1.4vw, 28px); }
+.presentation .candidate h2 { font-size: clamp(18px, 1.9vw, 38px); }
+.presentation .party { font-size: clamp(11px, .8vw, 17px); }
+.presentation .projection-label { font-size: clamp(10px, .7vw, 15px); }
+.presentation .projection-value { font-size: clamp(48px, 4.5vw, 96px); line-height: 1.05; }
+.presentation .projection-value span { font-size: .5em; }
+.presentation .interval,
+.presentation .official-line { font-size: clamp(12px, .9vw, 20px); }
+.presentation .progress-number { font-size: clamp(30px, 2.5vw, 52px); }
+.presentation .score-center .progress-label,
+.presentation .score-center small { font-size: clamp(11px, .8vw, 17px); text-align: center; }
+.presentation .dashboard { grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 16px; margin-top: 16px; }
+.presentation .dashboard > .panel { display: flex; flex-direction: column; min-width: 0; }
+.presentation .panel-head h2 { font-size: clamp(18px, 1.4vw, 29px); }
+.presentation .panel-head small,
+.presentation .panel-sub,
+.presentation .legend,
+.presentation .map-foot { font-size: clamp(11px, .8vw, 17px); }
+.presentation .legend { flex-wrap: wrap; }
+.presentation .chart,
+.presentation .map { height: clamp(200px, calc(100dvh - 840px), 700px); }
+.presentation .chart-empty { min-height: clamp(200px, calc(100dvh - 840px), 700px); font-size: clamp(16px, 1.2vw, 25px); }
+.presentation .map-wrap { flex: 1; min-height: 240px; }
+.presentation .map-tag { font-size: clamp(11px, .8vw, 16px); }
+.presentation .chart-summary { margin-top: auto; padding: 12px 17px; }
+.presentation .stat-title,
+.presentation .stat-note,
+.presentation .chart-callout { font-size: clamp(11px, .75vw, 16px); }
+.presentation .stat-value { font-size: clamp(23px, 1.8vw, 38px); }
+.presentation .chart-callout { margin: 0 15px 12px; padding: 8px; }
+.presentation .map-foot { margin-top: auto; }
+.presentation .footer { font-size: clamp(9px, .65vw, 14px); padding-top: 12px; }
+@media (max-width: 1150px) {
+  .presentation .avatar { width: 60px; height: 60px; }
+  .presentation .candidate h2 { font-size: 17px; }
+  .presentation .scoreboard { padding: 18px; grid-template-columns: minmax(0,1fr) 160px minmax(0,1fr); }
+  .presentation .interval { font-size: 11px; }
+}
+@media (max-height: 850px) {
+  .presentation .topbar { height: 54px; }
+  .presentation main { padding: 10px 18px; }
+  .presentation .page-title { top: 8px; right: 18px; }
+  .presentation .notice { padding: 7px 10px; margin-bottom: 10px; font-size: 12px; }
+  .presentation .scoreboard { padding: 12px 18px; }
+  .presentation .candidate h2 { font-size: clamp(17px, 1.6vw, 28px); }
+  .presentation .party { font-size: 10px; margin-bottom: 3px; }
+  .presentation .projection-label { margin-top: 6px; font-size: 10px; }
+  .presentation .projection-value { font-size: clamp(42px, 4vw, 64px); }
+  .presentation .interval,
+  .presentation .official-line { font-size: 11px; margin-top: 4px; }
+  .presentation .score-footer { margin-top: 10px; }
+  .presentation .dashboard { margin-top: 10px; }
+  .presentation .panel-head { padding: 12px 14px 8px; }
+  .presentation .chart-summary,
+  .presentation .chart-callout { display: none; }
+  .presentation .chart,
+  .presentation .map { height: clamp(160px, calc(100dvh - 530px), 300px); }
+  .presentation .chart-empty { min-height: clamp(160px, calc(100dvh - 530px), 300px); }
+  .presentation .map-wrap { min-height: 160px; }
+  .presentation .footer { font-size: 9px; line-height: 1.5; padding-top: 8px; }
 }

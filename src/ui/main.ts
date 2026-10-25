@@ -8,6 +8,8 @@ import { mathematicalDecision } from "../core/decision.ts";
 import { gunzipText } from "../core/codec.ts";
 import { loadHistory, readHistoryPage } from "./history.ts";
 import { enableAppInstall } from "./install.ts";
+import { candidateView } from "./presentation.ts";
+import { enablePresentation } from "./presentation-screen.ts";
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const api = (import.meta as any).env?.VITE_API_BASE ?? "";
 const pct = (x: number | null | undefined, d = 2) =>
@@ -77,14 +79,15 @@ const IBGE: Record<string, string> = {
   "52": "GO",
   "53": "DF",
 };
-app.innerHTML = `<header class="topbar"><div class="top-left"><div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>vértice<span style="color:#555;font-size:12px;margin-left:4px">/ 2026</span></div><div class="top-title">ELEIÇÕES GERAIS<b>Presidente da República · 2º turno</b></div></div><div class="top-right"><span class="top-date">DOMINGO, 25 OUTUBRO</span><span id="mode-badge" class="badge">OFICIAL</span><select id="mode" aria-label="Modo de dados"><option value="live">Dados oficiais</option><option value="simulation">Ensaio sintético</option></select></div></header>
-<main id="dashboard"><div class="page-title"><h1 class="eyebrow">Painel de acompanhamento eleitoral</h1><div class="tools"><button id="install-app" hidden>Instalar app</button><button id="national" class="active">Brasil</button><button id="refresh" title="Atualizar os dados">↻ Atualizar</button></div></div><p id="install-status" class="install-status" role="status" hidden></p><div id="notice" class="notice" role="status"></div><section class="scoreboard" aria-label="Placar presidencial" id="score"></section><nav class="section-nav" aria-label="Seções do painel"><div class="tabs"><button data-tab="overview" class="active">Visão geral</button><button data-tab="method">Método e cobertura</button><button data-tab="health">Diagnóstico da coleta</button></div><div id="coverage" class="coverage-line"></div></nav>
+app.innerHTML = `<header class="topbar"><div class="top-left"><div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>vértice<span style="color:#555;font-size:12px;margin-left:4px">/ 2026</span></div><div class="top-title">ELEIÇÕES GERAIS<b>Presidente da República · 2º turno</b></div></div><div class="top-right"><span class="top-date">DOMINGO, 25 OUTUBRO</span><span id="screen-updated" class="screen-updated"></span><span id="mode-badge" class="badge">OFICIAL</span><select id="mode" aria-label="Modo de dados"><option value="live">Dados oficiais</option><option value="simulation">Ensaio sintético</option></select></div></header>
+<main id="dashboard"><div class="page-title"><h1 class="eyebrow">Painel de acompanhamento eleitoral</h1><div class="tools"><button id="presentation" aria-pressed="false" title="Ampliar painel e entrar em tela cheia">Modo Telão</button><button id="install-app" hidden>Instalar app</button><button id="national" class="active">Brasil</button><button id="refresh" title="Atualizar os dados">↻ Atualizar</button></div></div><p id="install-status" class="install-status" role="status" hidden></p><div id="notice" class="notice" role="status"></div><section class="scoreboard" aria-label="Placar presidencial" id="score"></section><nav class="section-nav" aria-label="Seções do painel"><div class="tabs"><button data-tab="overview" class="active">Visão geral</button><button data-tab="method">Método e cobertura</button><button data-tab="health">Diagnóstico da coleta</button></div><div id="coverage" class="coverage-line"></div></nav>
 <div id="overview"><div class="dashboard"><section class="panel"><div class="panel-head"><h2>Evolução da apuração</h2><small id="graph-scope">Brasil</small></div><p class="panel-sub">Percentual de votos válidos por candidato</p><div class="legend"><span><i></i>Oficial</span><span><i class="projected"></i>Projeção</span><span>Faixa de 95% (calibração provisória)</span></div><div id="graph"></div><div id="chart-summary" class="chart-summary"></div><div class="chart-callout">Faixa calibrada em uma única eleição (2022). O selo de vencedor permanece indisponível até validação independente.</div></section>
-<section class="panel"><div class="panel-head"><h2>O Brasil, voto a voto</h2><div class="map-tools"><select id="map-mode" aria-label="Indicador no mapa"><option value="projection">Projeção por UF</option><option value="official">Apuração oficial por UF</option><option value="margin">Margem projetada</option></select></div></div><p class="panel-sub">Selecione um estado para explorar os resultados</p><div class="map-wrap"><span class="map-tag" id="map-tag">BRASIL / UNIDADES DA FEDERAÇÃO</span><svg class="map" id="map" viewBox="0 0 500 430" aria-label="Mapa do Brasil por estado" role="group"></svg><div class="map-controls"><button id="zoom-in" aria-label="Ampliar mapa">+</button><button id="zoom-out" aria-label="Reduzir mapa">−</button><button id="map-reset" aria-label="Restaurar mapa">↺</button></div></div><div class="map-foot"><span>Maioria A <i class="ramp"></i> Maioria B</span><span>Malha: IBGE · <span id="map-level">UF</span></span></div></section>
+<section class="panel"><div class="panel-head"><h2>O Brasil, voto a voto</h2><div class="map-tools"><select id="map-mode" aria-label="Indicador no mapa"><option value="projection">Projeção por UF</option><option value="official">Apuração oficial por UF</option><option value="margin">Margem projetada</option></select></div></div><p class="panel-sub" id="map-description">Projeção por território · estimativa experimental</p><div class="map-wrap"><span class="map-tag" id="map-tag">BRASIL / UNIDADES DA FEDERAÇÃO</span><svg class="map" id="map" viewBox="0 0 500 430" aria-label="Mapa do Brasil por estado" role="group"></svg><div class="map-controls"><button id="zoom-in" aria-label="Ampliar mapa">+</button><button id="zoom-out" aria-label="Reduzir mapa">−</button><button id="map-reset" aria-label="Restaurar mapa">↺</button></div></div><div class="map-foot"><span id="map-legend">Maioria A <i class="ramp"></i> Maioria B</span><span>Malha: IBGE · <span id="map-level">UF</span></span></div></section>
 <section class="panel territories"><div class="panel-head"><h2>Territórios</h2><small>27 UFs + exterior</small></div><input id="search" class="territory-search" type="search" placeholder="Buscar estado ou região…" aria-label="Buscar território"><div id="territories" class="territory-list"></div></section></div>
 <section class="panel replay" aria-label="Reprodução do histórico"><button id="play" aria-label="Reproduzir histórico">▶</button><div class="replay-title">Linha do tempo<small id="replay-label">Acompanhamento atual</small></div><input id="replay" type="range" min="0" max="0" value="0" aria-label="Instante do histórico"><span class="replay-time" id="replay-time">—</span><button id="return-live">Voltar ao vivo</button></section><div class="bottom-grid" id="metrics"></div></div><section id="details" class="panel details hidden"></section><footer class="footer"><span>VÉRTICE / ELEIÇÕES 2026 · Fonte oficial: Tribunal Superior Eleitoral · Horários de Brasília</span><span>Projeção experimental independente · Sem vínculo com o TSE</span><span class="photo-credits">Fotos com enquadramento circular: <a href="https://www.flickr.com/photos/lulaoficial/55450293419/in/album-72177720335035217" target="_blank" rel="noopener noreferrer">Lula — Ricardo Stuckert / Lula Oficial</a> (<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>); Flávio Bolsonaro — <a href="https://www.flaviobolsonaro.com.br/materiais" target="_blank" rel="noopener noreferrer">arquivo oficial fornecido</a>.</span></footer></main>`;
 const $ = (id: string) => document.getElementById(id)!;
 enableAppInstall($("install-app") as HTMLButtonElement,$("install-status"));
+enablePresentation($("presentation") as HTMLButtonElement,()=>{tab="overview";render();window.scrollTo(0,0);});
 $("score").addEventListener('error',(event)=>{
   if(event.target instanceof HTMLImageElement)event.target.hidden=true;
 },true);
@@ -109,6 +112,7 @@ function scoped(s: Snapshot): { p: Projection; t: Territory | undefined } {
 function render() {
   const s = chosen();
   if (!s) {
+    $("notice").hidden=false;
     $("notice").textContent = error || "Conectando à fonte oficial…";
     return;
   }
@@ -174,24 +178,31 @@ function render() {
         `DEFINIÇÃO MATEMÁTICA · A vantagem de ${names[decision === "a" ? 0 : 1]} supera o eleitorado ainda não totalizado. Cálculo conservador sobre dados oficiais.`;
   }
   const display = projectionDisplay(p.available, p.progress, s.mode);
+  const routineNotice=$("notice").textContent?.trim() === "BUs e parciais municipais; faixa provisória calibrada em 2022.";
+  $("notice").hidden = routineNotice && !collectionIssue;
+  if(routineNotice&&collectionIssue)$("notice").textContent="COLETA PARCIAL · Há grupos sem confirmação recente. Consulte o diagnóstico da coleta.";
+  $("screen-updated").textContent = `${index>=0?'Replay':s.mode==='simulation'?'Ensaio':'Verificado'} · ${new Date(index<0?(lastCheckedAt??s.createdAt):s.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'})} · Brasília`;
+  const view=candidateView(s,p,official);
+  $("map-legend").innerHTML=`${esc(view.left.name)} <i class="ramp"></i> ${esc(view.right.name)}`;
+  $("map-description").textContent=mapMode==='official'?'Apuração oficial · TSE · votos válidos':mapMode==='margin'?'Margem projetada · estimativa experimental':'Projeção por território · estimativa experimental';
   const card = (right: boolean) => {
+    const candidate=right?view.right:view.left;
     const visible = display !== "hidden",
-      share = !visible ? null : right ? (p.share === null ? null : 1 - p.share) : p.share,
-      lo = right ? (p.high === null ? null : 1 - p.high) : p.low,
-      hi = right ? (p.low === null ? null : 1 - p.low) : p.high,
-      ov = official ? (right ? official.b : official.a) : null;
+      share = !visible ? null : candidate.share,
+      lo = candidate.low,
+      hi = candidate.high,
+      ov = candidate.votes;
     const interval = !p.available ? "Projeção indisponível"
       : !visible ? "Projeção exibida a partir de 1% do eleitorado observado"
       : `${pct(lo)} — ${pct(hi)} · faixa de 95%${display === "unreliable" ? " · pouco confiável até 2,5%" : ""}`;
-    const number=s.identity.candidates[right?1:0],photo=s.mode==='live'
-      ? number==='13'?'/photos/lula.jpg':number==='22'?'/photos/flavio.webp':null : null;
-    return `<div class="candidate ${right ? "right" : ""}"><div class="avatar"><span class="avatar-fallback" aria-hidden="true">${right ? "B" : "A"}</span>${photo?`<img src="${photo}" alt="" aria-hidden="true" width="57" height="57" decoding="async" class="portrait portrait-${number}">`:''}</div><div><div class="party">CANDIDATO ${right ? "B" : "A"} · ${number}</div><h2>${esc(names[right ? 1 : 0])}</h2><div class="projection-value">${pct(share).replace("%", "<span>%</span>")}</div><div class="interval">${interval}</div><div class="official-line">OFICIAL <b>${pct(official && official.valid ? ov! / official.valid : null)}</b> · ${num(ov)} votos</div></div></div>`;
+    const {number,photo}=candidate;
+    return `<div class="candidate ${right ? "right" : ""}"><div class="avatar"><span class="avatar-fallback" aria-hidden="true">${candidate.index ? "B" : "A"}</span>${photo?`<img src="${photo}" alt="" aria-hidden="true" width="57" height="57" decoding="async" class="portrait portrait-${number}">`:''}</div><div><div class="party">${s.mode==='live'?'NÚMERO '+esc(number):'CANDIDATO '+(candidate.index?'B':'A')}</div><h2>${esc(candidate.name)}</h2><div class="projection-label">PROJEÇÃO FINAL</div><div class="projection-value">${pct(share).replace("%", "<span>%</span>")}</div><div class="interval">${interval}</div><div class="official-line">OFICIAL <b>${pct(official && official.valid ? ov! / official.valid : null)}</b> · ${num(ov)} votos</div></div></div>`;
   };
   $("score").innerHTML =
     card(false) +
     `<div class="score-center"><span class="progress-label">${scope === "BR" ? "Brasil" : esc(t?.name ?? scope)}</span><div class="progress-number">${pct(official?.progress ?? (s.mode === "simulation" ? p.progress : null), 1)}</div><span class="progress-label">${official ? "Seções totalizadas" : "Eleitorado observado"}</span><div class="progress-track"><i style="width:${100 * (official?.progress ?? p.progress)}%"></i></div><small>${s.mode === "simulation" ? "Dados fictícios" : "TSE · EA20"}</small></div>` +
     card(true) +
-    `<div class="score-footer"><i style="width:${100 * (p.share ?? 0.5)}%"></i><i style="flex:1"></i></div>`;
+    `<div class="score-footer"><i style="width:${100 * (view.left.share ?? 0.5)}%"></i><i style="flex:1"></i></div>`;
   $("coverage").textContent =
     `Histórico: ${num(p.modeledSections)}${official ? " / " + num(official.totalSections) : ""} unidades · ${num(p.observedSections)} observadas`;
   $("graph-scope").textContent = t?.name ?? "Brasil";
@@ -232,6 +243,7 @@ function render() {
   $("national").classList.toggle("active", scope === "BR");
 }
 function renderGraph(s: Snapshot) {
+  const view=candidateView(s,s.projection,s.official),a=view.left.index===0?view.left:view.right,b=view.left.index===1?view.left:view.right;
   const series = history
     .filter((x) => x.sequence <= s.sequence)
     .map((x) => {
@@ -282,11 +294,11 @@ function renderGraph(s: Snapshot) {
             .reverse()
             .map((v) => `${x(v.i)},${y(invert ? 1 - v.p.low! : v.p.high!)}`),
         );
-      svg += `<polygon points="${points.join(" ")}" fill="${invert ? "#f43f5e" : "#3b82f6"}" opacity=".12"/>`;
+      svg += `<polygon points="${points.join(" ")}" fill="${invert ? b.color : a.color}" opacity=".12"/>`;
     }
   }
   for (const invert of [false, true]) {
-    const color = invert ? "#fb7185" : "#60a5fa";
+    const color = invert ? b.color : a.color;
     const line = (projected: boolean) => {
       let d = "",
         prev = -2;
@@ -311,6 +323,7 @@ function renderGraph(s: Snapshot) {
   $("graph").innerHTML = svg + "</svg>";
 }
 function renderTerritories(s: Snapshot) {
+  const view=candidateView(s,s.projection,s.official);
   const rows = s.territories
     .filter((t) => (municipalUf ? t.parent === municipalUf : !t.parent))
     .filter((t) =>
@@ -328,8 +341,9 @@ function renderTerritories(s: Snapshot) {
                 ? t.official.a / t.official.valid
                 : null
               : p.share,
-          leading = share === null ? null : Math.max(share, 1 - share);
-        return `<button class="territory-row ${scope === t.code ? "active" : ""}" data-scope="${esc(t.code)}" aria-label="Selecionar ${esc(t.name)}"><span class="uf-tag">${t.parent ?? t.code}</span><span class="territory-name">${esc(t.name)}<small>${pct(mapMode === "official" ? t.official?.progress : p.progress, 1)} ${mapMode === "official" ? "apurado" : "do eleitorado observado"}</small><span class="tiny-bar"><i style="width:${(share ?? 0.5) * 100}%"></i><i style="flex:1"></i></span></span><span class="territory-value ${share !== null && share < 0.5 ? "red" : ""}">${pct(leading, 1)}<small>${share === null ? "SEM DADOS" : share >= 0.5 ? "A LIDERA" : "B LIDERA"}</small></span></button>`;
+          leftShare=share===null?null:view.left.index===0?share:1-share,
+          leading = leftShare === null ? null : Math.max(leftShare, 1 - leftShare);
+        return `<button class="territory-row ${scope === t.code ? "active" : ""}" data-scope="${esc(t.code)}" aria-label="Selecionar ${esc(t.name)}"><span class="uf-tag">${t.parent ?? t.code}</span><span class="territory-name">${esc(t.name)}<small>${pct(mapMode === "official" ? t.official?.progress : p.progress, 1)} ${mapMode === "official" ? "apurado" : "do eleitorado observado"}</small><span class="tiny-bar"><i style="width:${(leftShare ?? 0.5) * 100}%"></i><i style="flex:1"></i></span></span><span title="${esc(leftShare===null?'Sem dados':leftShare===0.5?'Empate':(leftShare>0.5?view.left:view.right).name+' lidera')}" class="territory-value ${leftShare !== null && leftShare < 0.5 ? "red" : ""}">${pct(leading, 1)}<small>${leftShare === null ? "SEM DADOS" : leftShare===0.5?'EMPATE':(s.mode==='live'?esc((leftShare>0.5?view.left:view.right).number):((leftShare>0.5?view.left:view.right).index?'B':'A'))+' LIDERA'}</small></span></button>`;
       })
       .join("") || '<p class="no-results">Nenhum território encontrado.</p>';
   $("territories")
@@ -344,6 +358,7 @@ function renderTerritories(s: Snapshot) {
     );
 }
 function renderMap(s: Snapshot) {
+  const view=candidateView(s,s.projection,s.official),a=view.left.index===0?view.left:view.right,b=view.left.index===1?view.left:view.right;
   if (!geo) {
     $("map").innerHTML =
       '<text x="250" y="210" text-anchor="middle">Carregando malha do IBGE…</text>';
@@ -394,8 +409,8 @@ function renderMap(s: Snapshot) {
       q === null
         ? "#30343b"
         : q >= 0.5
-          ? `hsl(215 70% ${Math.max(29, 48 - Math.abs(q - 0.5) * 35)}%)`
-          : `hsl(347 72% ${Math.max(29, 48 - Math.abs(q - 0.5) * 35)}%)`;
+          ? `hsl(${a.hue} 70% ${Math.max(29, 48 - Math.abs(q - 0.5) * 35)}%)`
+          : `hsl(${b.hue} 72% ${Math.max(29, 48 - Math.abs(q - 0.5) * 35)}%)`;
     const polygons =
       feature.geometry.type === "MultiPolygon"
         ? feature.geometry.coordinates
@@ -417,7 +432,7 @@ function renderMap(s: Snapshot) {
         [0, 0],
       ),
       [cx, cy] = pos(centroid);
-    content += `<path data-uf="${code}" class="${scope === code ? "selected" : ""}" d="${path}" fill="${color}" fill-rule="evenodd" tabindex="0" role="button" aria-label="${esc(t.name)}: ${q === null ? "sem dados" : pct(q)} para A"><title>${esc(t.name)} · ${q === null ? "Sem dados" : pct(q) + " para A"}</title></path>${municipalUf ? "" : `<text x="${cx}" y="${cy}">${code}</text>`}`;
+    content += `<path data-uf="${code}" class="${scope === code ? "selected" : ""}" d="${path}" fill="${color}" fill-rule="evenodd" tabindex="0" role="button" aria-label="${esc(t.name)}: ${q === null ? "sem dados" : pct(q)} para ${esc(a.name)}"><title>${esc(t.name)} · ${q === null ? "Sem dados" : pct(q) + " para "+esc(a.name)}</title></path>${municipalUf ? "" : `<text x="${cx}" y="${cy}">${code}</text>`}`;
   }
   $("map").innerHTML =
     `<g transform="translate(${250 - 250 * zoom},${215 - 215 * zoom}) scale(${zoom})">${content}</g>`;
