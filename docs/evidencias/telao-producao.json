@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-25T18:13:26.343Z",
+  "codeCommit": "d50254b4235df444a26c952fde8cabe7104c0d3d",
+  "assets": [
+    {
+      "path": "/assets/index-zGzgUt0V.js",
+      "bytes": 41488,
+      "sha256": "0694b1ba281f90d83b324c83a165aa976f21183392146530f1211f9ce5c073e7"
+    },
+    {
+      "path": "/assets/index-CyyAq7LX.css",
+      "bytes": 16757,
+      "sha256": "732a1430ad33681de1336d9680f034d62a15ac550392c0fa06d7889eddf66e54"
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "bytes": 622,
+      "sha256": "ac2c66a8059625706fc484c1e89a272e1ca88e59533db5f59265843ae9756ed1"
+    },
+    {
+      "path": "/photos/lula.jpg",
+      "bytes": 33736,
+      "sha256": "c1a6b78fdc20ea9c7613f518acfdf5d8febaf868513842e47e202bea01f64056"
+    },
+    {
+      "path": "/photos/flavio.webp",
+      "bytes": 218570,
+      "sha256": "7d50001faee9b4eab300987abe7a246396b7738d7906ddd495af006d6de7daf4"
+    }
+  ],
+  "healthState": "ok",
+  "collectionState": "ok",
+  "modelHash": "f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd",
+  "queue": 291
+}
