@@ -38,6 +38,10 @@ O fallback segue a prioridade de disponibilidade do método de Rodrigo Mahlmeist
 
 Distribuições inteiras preservam o parcial municipal e o limite de eleitorado conhecido. Elas são marcadas `estimated=true`; nunca são apresentadas como BUs lidos. Um BU real tem precedência e provoca nova reconciliação do residual. Quantidades ou horários incompatíveis entre arquivos deixam o município pendente; correção para zero retira estimativas. Diferenças impossíveis não geram votos negativos nem ajuste dos BUs reais.
 
+Qualquer BU real, inclusive `received` ou `excluded`, ocupa sua seção e impede alocação estimada nesse ID. Capacidade histórica insuficiente ou divergência na conservação de A/B/brancos/nulos rejeita a alocação inteira; não há truncamento nem confirmação silenciosa. Quando o parcial fica incompatível ou indisponível, o município permanece pendente e mantém apenas BUs reais no universo observado. A cobertura pode cair temporariamente até uma reconciliação segura.
+
+A chegada de BU real retira imediatamente estimativas anteriores daquele município, antes da próxima consulta municipal. A nova alocação só é publicada quando todos os fragmentos da atualização lógica estiverem recebidos e conferidos, incluindo suas retiradas. Enquanto incompleta, o coordenador preserva o estado anterior. A retomada restaura fragmentos pendentes e cursores juntos. A fila usa rotação e retentativas com atraso para evitar exclusão permanente de municípios posteriores.
+
 Todas as superfícies da interface ocultam estimativas abaixo de 1% do eleitorado observado no respectivo escopo; de 1% a 2,5% há aviso de baixa confiabilidade. Resultado oficial permanece independente. O ponto central do modelo, a mistura 5–15%, a hierarquia e as regras de vencedor foram preservados nesta calibração.
 
 ## Avaliação

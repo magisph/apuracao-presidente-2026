@@ -119,3 +119,43 @@ test('an outdated municipal partial cannot invent residual votes after newer rea
   const rows=estimateMunicipalObservations({sections,partial:partial(100,90,2,3,3),real:[bu],previous,order,identity,retrievedAt:bu.retrievedAt});
   assert.equal(rows.filter(r=>r.status==='totalized').length,0);
 });
+
+for (const status of ['excluded', 'received'] as const) {
+  test(`real ${status} BU cannot absorb municipal residual assigned to a free section`, () => {
+    const units = [section(1), section(2)], bu = {...real(units[0]), status};
+    const ledger = new SectionLedger(identity, units);
+    ledger.apply(bu);
+    const rows = estimateMunicipalObservations({sections: units, partial: partial(120,90,1,0,0),
+      real:[bu],previous:[],order:new Map(),identity,retrievedAt:bu.retrievedAt});
+    for (const row of rows) ledger.apply(row);
+    assert.deepEqual(ledger.values().map(o=>o.id), [units[1].id]);
+    assert.deepEqual(totals(ledger.values()), {a:120,b:90,blank:0,null:0});
+    assert.equal(ledger.records.get(bu.id)!.status,status);
+  });
+}
+
+test('municipal partial above all eligible historical capacity is rejected instead of truncating B', () => {
+  const units=[section(1)];
+  assert.throws(()=>estimateMunicipalObservations({sections:units,partial:partial(220,120,1,10,10),
+    real:[],previous:[],order:new Map(),identity,retrievedAt:'2026-10-25T20:31:00Z'}),/capacity|conservation/);
+});
+
+test('positive municipal votes with zero counted sections cannot be silently acknowledged',()=>{
+  assert.throws(()=>estimateMunicipalObservations({sections,partial:partial(120,90,0,0,0),
+    real:[],previous:[],order,identity,retrievedAt:'2026-10-25T20:31:00Z'}),/conservation/);
+});
+
+test('regressed municipal partial withdraws unsafe estimates after a newer BU outside their set', () => {
+  const ledger=new SectionLedger(identity,sections), sourceTime='2026-10-25T20:40:00.000Z';
+  const initial=estimateMunicipalObservations({sections,partial:{...partial(220,200,2,0,0),sourceTime},
+    real:[],previous:[],order:new Map(),identity,retrievedAt:sourceTime});
+  initial.forEach(o=>ledger.apply(o));
+  const bu={...real(sections[2]),sourceTime:'2026-10-25T20:50:00.000Z',blank:0,null:0,turnout:220};
+  ledger.apply(bu);
+  const next=estimateMunicipalObservations({sections,partial:partial(220,200,2,0,0),real:[bu],previous:initial,
+    order:new Map(),identity,retrievedAt:bu.sourceTime});
+  next.forEach(o=>ledger.apply(o));
+  assert.deepEqual(ledger.values().map(o=>o.id),[bu.id]);
+  assert.deepEqual(totals(ledger.values()),{a:120,b:100,blank:0,null:0});
+  assert.equal(ledger.quarantined.size,0);
+});

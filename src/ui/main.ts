@@ -514,7 +514,7 @@ function renderDetails(s: Snapshot) {
         .filter((t) => (municipalUf ? t.parent === municipalUf : !t.parent))
         .map((t) => {
           const h = t.historical;
-          return `<tr><td style="padding:8px;border-bottom:1px solid #292929">${esc(t.name)}</td><td align="center">${pct(h?.valid ? h.a / h.valid : null)}</td><td align="center">${pct(h?.valid ? h.b / h.valid : null)}</td><td align="center">${pct(h?.valid ? h.other / h.valid : null)}</td><td align="center">${pct(t.projection.share)}</td></tr>`;
+          return `<tr><td style="padding:8px;border-bottom:1px solid #292929">${esc(t.name)}</td><td align="center">${pct(h?.valid ? h.a / h.valid : null)}</td><td align="center">${pct(h?.valid ? h.b / h.valid : null)}</td><td align="center">${pct(h?.valid ? h.other / h.valid : null)}</td><td align="center">${pct(displayProjection(t.projection,s.mode).share)}</td></tr>`;
         })
         .join("")}</tbody></table></div>`;
     return;

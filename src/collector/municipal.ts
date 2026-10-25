@@ -31,6 +31,14 @@ export function tseTime(value: string) {
   if (!m) throw Error(`invalid TSE time ${value}`);
   return new Date(`${m[3]}-${m[2]}-${m[1]}T${m[4]}-03:00`).toISOString();
 }
+// Withdraw derived observations without competing with any real BU already occupying the ID.
+export function withdrawMunicipalEstimates(previous: Observation[], real: Observation[], retrievedAt: string): Observation[] {
+  const occupied = new Set(real.filter(r=>!r.estimated).map(r=>r.id));
+  const version = Math.max(0,...previous.map(p=>p.version),...real.map(r=>r.version))+1;
+  return previous.filter(p=>p.estimated && p.status==='totalized' && !occupied.has(p.id)).map(p=>({
+    ...p,version,status:'excluded',hash:`est-withdrawn-${p.hash}`,retrievedAt,
+  }));
+}
 // Integer apportionment proportional to weights, never above per-section capacity (largest remainders).
 function allocate(total: number, weights: number[], caps: number[]) {
   const out = weights.map(() => 0);
@@ -50,6 +58,7 @@ function allocate(total: number, weights: number[], caps: number[]) {
       if (caps[i] - out[i] > 0) { out[i]++; left--; }
     }
   }
+  if (left !== 0) throw Error('municipal residual conservation failed');
   return out;
 }
 export function estimateMunicipalObservations(o: {
@@ -58,19 +67,21 @@ export function estimateMunicipalObservations(o: {
 }): Observation[] {
   const sourceVersion = Date.parse(o.partial.sourceTime), ids = new Set(o.sections.map(s => s.id));
   if (!Number.isSafeInteger(sourceVersion)) throw Error("invalid municipal source time");
-  if(o.previous.some(p=>p.estimated && Date.parse(p.sourceTime)>sourceVersion)) return [];
+  if(o.previous.some(p=>p.estimated && Date.parse(p.sourceTime)>sourceVersion))
+    return withdrawMunicipalEstimates(o.previous,o.real,o.retrievedAt);
   // The signed partial can stay unchanged while real BUs alter its residual allocation.
   let version=sourceVersion;
   for(const previous of o.previous) if(previous.estimated) version=Math.max(version,previous.version+1);
   const real = o.real.filter(r => ids.has(r.id) && !r.estimated && r.status === "totalized"),
     realIds = new Set(real.map(r => r.id));
+  const occupied = new Set(o.real.filter(r => ids.has(r.id) && !r.estimated).map(r => r.id));
+  const eligible = (s: SectionBase) => !occupied.has(s.id) && s.matched && s.electorate !== null;
   const rank = (s: SectionBase) => o.order.get(s.id) ?? Number.MAX_SAFE_INTEGER,
     byOrder = [...o.sections].sort((x, y) => rank(x) - rank(y) || x.id.localeCompare(y.id));
   // Counted set: real BUs, then sections flagged by the section configuration, then first-round receipt order.
   const chosen = new Set(realIds), target = Math.max(o.partial.countedSections, realIds.size);
-  for (const s of byOrder) if (chosen.size < target && o.totalized?.has(s.id)) chosen.add(s.id);
-  for (const s of byOrder) if (chosen.size < target) chosen.add(s.id);
-  const eligible = (s: SectionBase) => !realIds.has(s.id) && s.matched && s.electorate !== null;
+  for (const s of byOrder) if (chosen.size < target && eligible(s) && o.totalized?.has(s.id)) chosen.add(s.id);
+  for (const s of byOrder) if (chosen.size < target && eligible(s)) chosen.add(s.id);
   const residualTotal = (["a", "b", "blank", "null"] as const)
     .reduce((n, k) => n + Math.max(0, o.partial[k] - real.reduce((m, r) => m + r[k], 0)), 0);
   // A partial larger than the selected sections can hold means the selection is wrong; widen it, never drop votes.
@@ -79,6 +90,7 @@ export function estimateMunicipalObservations(o: {
     if (capacity < residualTotal && !chosen.has(s.id) && eligible(s)) { chosen.add(s.id); capacity += s.electorate!; }
   const inconsistent = (["a","b","blank","null"] as const).some(k=>real.reduce((n,r)=>n+r[k],0)>o.partial[k])
     || real.some(r=>Date.parse(r.sourceTime)>sourceVersion);
+  if (!inconsistent && capacity < residualTotal) throw Error('municipal residual exceeds eligible historical capacity');
   const estimated = inconsistent ? [] : o.sections.filter(s => chosen.has(s.id) && eligible(s));
   const out: Observation[] = [];
   if (estimated.length && o.partial.countedSections > 0) {
@@ -100,9 +112,12 @@ export function estimateMunicipalObservations(o: {
         sourceTime: o.partial.sourceTime, retrievedAt: o.retrievedAt });
     });
   }
+  if (!inconsistent && (['a','b','blank','null'] as const).some(k=>
+    real.reduce((n,r)=>n+r[k],0)+out.reduce((n,r)=>n+r[k],0)!==o.partial[k]))
+    throw Error('municipal residual conservation failed');
   const kept = new Set(out.map(x => x.id));
   for (const p of o.previous)
-    if (ids.has(p.id) && p.estimated && p.status === "totalized" && !kept.has(p.id) && !realIds.has(p.id) && version > p.version)
+    if (ids.has(p.id) && p.estimated && p.status === "totalized" && !kept.has(p.id) && !occupied.has(p.id) && version > p.version)
       out.push({ ...p, version, status: "excluded", hash: `est-withdrawn-${p.hash}`, sourceTime: o.partial.sourceTime, retrievedAt: o.retrievedAt });
   return out;
 }

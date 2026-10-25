@@ -46,3 +46,9 @@ Para conter a amplificação de escritas do fallback, os lotes agora agrupam at�
 Varredura concluída: oito execuções, quatro pares, todos passam nos 14 checkpoints relevantes. Selecionado o menor par, 0,03/0,035. `model.ts` desta retomada mudou exclusivamente essa linha de valores; hash canônico `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`.
 
 Suíte final: **98 testes aprovados, zero falhas**. Build/TypeScript aprovados. Dry-run Wrangler no Worker/D1 correto aprovado. Nenhum push, merge, deploy efetivo ou reinício da coleta produtiva nesta rodada; aguardando a confirmação solicitada pelo usuário. O lembrete de realinhamento para 25/10 às 15h15 de Brasília está ativo.
+
+## Atualização posterior à revisão integral de `8e3ee82`
+
+O usuário pediu uma nova revisão antes de produção; ela identificou seis achados importantes adicionais. A rodada de correções autorizada está concluída localmente, sem commit, merge, push ou deploy. **115/115 testes e build/TypeScript aprovados**; regressões cobrem alocação em IDs com BU real, conservação sem truncamento, retirada imediata com fonte incompatível e fila cheia, justiça das retentativas, reconciliação completa entre fragmentos/reinícios e comparação histórica abaixo de 1%.
+
+Ensaio sintético de pico: 499.248 observações, 488 fragmentos, confirmação perdida recuperada, aplicação única e íntegra em 31,84 s neste PC. Isso não comprova latência do TSE ou cotas do Cloudflare. Evidências e decisões em `docs/correcoes-seis-achados-2026-10-24.md`; o relatório anterior de 98 testes é histórico. Modelo, ordem 1T e calibração preservados. Ativação depende de confirmação expressa e de coordenador/grupos com a revisão corrigida.

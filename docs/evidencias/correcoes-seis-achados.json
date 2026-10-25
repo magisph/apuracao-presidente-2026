@@ -1,0 +1,67 @@
+{
+  "kind": "local-six-findings-correction",
+  "createdAt": "2026-10-25T01:54:25.6401419Z",
+  "branch": "modo-municipal",
+  "baseHead": "8e3ee82f580f4756297e95b55847f74f29f02082",
+  "uncommitted": true,
+  "tests": {
+    "log": "data/six-fixes-tests-final.log",
+    "passed": 115,
+    "failed": 0
+  },
+  "build": {
+    "passed": true,
+    "log": "data/six-fixes-build-final.log"
+  },
+  "peak": {
+    "kind": "synthetic-national-burst-no-network",
+    "units": 499248,
+    "fragments": 488,
+    "largestRequest": 9348,
+    "stagedMs": 11163.735799999999,
+    "totalMs": 31837.8658,
+    "applications": 1,
+    "totalA": 59909760,
+    "totalB": 44932320,
+    "lostAcknowledgementRecovered": true,
+    "incompleteReconciliationPublished": false,
+    "peakRssBytes": 1033666560,
+    "limitation": "Local encoding, durable outbox and assembly only; not a measurement of TSE availability or Cloudflare quotas."
+  },
+  "files": [
+    {
+      "path": "scripts/collect.ts",
+      "sha256": "adbb967888b252ab1b6626f0dc8ac974aec75e542a946c69cffc79fe7895327e"
+    },
+    {
+      "path": "src/collector/municipal.ts",
+      "sha256": "e4d028c8e3b396e51ae52ca9519a0126b16d651fb8e38e52459feef5d69f46a8"
+    },
+    {
+      "path": "src/collector/outbox.ts",
+      "sha256": "52fda4faf4d2540cff17e5740256e0f119b6f5122e346984f123c3f9673c7efc"
+    },
+    {
+      "path": "src/ui/main.ts",
+      "sha256": "6b8b833272551ac5c1344619a9680bda481c0fa0166e98eda682e1db9f7e276d"
+    },
+    {
+      "path": "tests/collector-flow.test.ts",
+      "sha256": "38ae95d4aa3b6abef7f0706854a0331df8df038f22efd46ba56892081d7a4d62"
+    },
+    {
+      "path": "tests/delivery.test.ts",
+      "sha256": "80081d211c5b6d9184dfef43508f9b6d00f9d75141becb8994ba17d6bce41940"
+    },
+    {
+      "path": "tests/municipal.test.ts",
+      "sha256": "4453efe0da7a143a5d57aa248c75e13df8331c9fc7b88100b4bc0c52b2f5c842"
+    },
+    {
+      "path": "tests/ui-history.test.ts",
+      "sha256": "3e263a965c45cf1037f7a5bd55f60eb1bfa0fbaf724478245d577eee45fe7893"
+    }
+  ],
+  "productionWrites": false,
+  "independentRereview": false
+}

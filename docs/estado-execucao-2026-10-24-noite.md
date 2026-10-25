@@ -40,3 +40,9 @@ Ordem completa e verificada commitada em `1764255`: 499.206 entradas utilizávei
 Calibração repetida e concluída: **0,03 nacional / 0,035 UF** é o menor par da grade com cobertura nos 14 checkpoints abaixo de 100% nos modos seção e municipal. Evidência versionada em `config/calibracao-faixa-2022.json`; calibração provisória de uma única eleição, sem probabilidade/vencedor estatístico. **98 testes e build aprovados; dry-run de deploy aprovado.**
 
 Todos os processos locais de geração terminaram. Nenhuma modificação foi enviada à produção nesta retomada. Próximo gate: **pedir confirmação do usuário para merge na main, push e ativação**; depois CI, deploy da API/assets compatíveis e troca controlada do run, conferindo a primeira publicação pelo novo hash de modelo. Lembrete de 25/10 às 15h15 de Brasília criado, somente para avisar.
+
+## Rodada posterior: revisão integral e seis correções no working tree
+
+A revisão integral de `d6eaf57..8e3ee82` encontrou seis achados importantes adicionais. A pedido do usuário, todos receberam correções locais e regressões RED→GREEN. Estado mais recente em `docs/correcoes-seis-achados-2026-10-24.md`: **115 testes aprovados, zero falhas; build/TypeScript aprovados**. Rajada sintética de 499.248 observações passou pelo transporte durável com confirmação perdida e retomada, sem aplicar fragmentos incompletos (31,84 s locais).
+
+Não repetir geração da ordem ou calibração: modelo e artefatos permanecem intactos. HEAD continua `8e3ee82`; as correções ainda não foram commitadas nem publicadas. Antes de qualquer ação de produção, obter confirmação expressa e garantir que o coordenador com montagem atômica esteja ativo antes de consumir fragmentos dos produtores municipais novos. O ensaio local não comprova cotas de nuvem nem disponibilidade futura das fontes.

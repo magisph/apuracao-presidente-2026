@@ -17,12 +17,13 @@ import { municipalTerritories } from "../src/core/territories.ts";
 import { snapshotContent } from "../src/core/change.ts";
 import { readEvents } from "../src/collector/events.ts";
 import { gzipText, gunzipText } from "../src/core/codec.ts";
-import { estimateMunicipalObservations, loadReceiptOrder, parseAndamento, tseTime, replaceConfiguredSections } from "../src/collector/municipal.ts";
+import { estimateMunicipalObservations, loadReceiptOrder, parseAndamento, tseTime, replaceConfiguredSections, withdrawMunicipalEstimates } from "../src/collector/municipal.ts";
 import type { AndamentoRow } from "../src/collector/municipal.ts";
 import { partitionUFs } from "../src/collector/partition.ts";
 import { publishMunicipalPages } from "../src/collector/publication.ts";
 import { isFatalCollectionError } from "../src/collector/failure.ts";
-import { DurableOutbox, observationBatches } from "../src/collector/outbox.ts";
+import { DurableOutbox, observationBatches, ObservationAssembly } from "../src/collector/outbox.ts";
+import type { ObservationBatch } from "../src/collector/outbox.ts";
 import { collectionHealth } from "../src/collector/health.ts";
 import { projectHierarchy } from "../src/core/model.ts";
 import { verifyResourceHashes } from "../src/collector/provenance.ts";
@@ -91,6 +92,11 @@ const applyObservation = (o: Observation) => {
     throw e;
   }
 };
+let assembly=new ObservationAssembly();
+function applyBatch(payload:ObservationBatch,source:string) {
+  if(payload.baseHash!==baseHash)throw Error('remote base hash mismatch');
+  for(const o of assembly.accept(payload,source)??[])applyObservation(o);
+}
 let sequence = 0,
   cursor = 0,
   lease: any = null,
@@ -130,7 +136,11 @@ async function deliverPending() {
     return false;
   }
   try {
-    await outbox.flush(async batch => { await post("/ingest/batch", { lease, ...batch }); });
+    await outbox.flush(async batch => {
+      await post("/ingest/batch", { lease, ...batch });
+      const payload=batch.payload as any;
+      applyBatch(payload.encoding==='gzip-base64'?JSON.parse(await gunzipText(payload.data)):payload,shard);
+    });
     deliveryFailures = 0;
     return true;
   } catch (e) {
@@ -185,6 +195,7 @@ try {
   const saved = await store.read<any>();
   if (saved.baseHash !== baseHash) throw Error("checkpoint base hash mismatch");
   ledger.restore(saved.ledger);
+  assembly=new ObservationAssembly(saved.assembly);
   sequence = saved.sequence;
   cursor = saved.cursor;
   remoteCursors = saved.remoteCursors ?? {};
@@ -206,20 +217,14 @@ if (!endpoint) {
   const local = await readEvents(`data/events-${shard}.ndjson`);
   for (const b of local.events) {
     if (b.baseHash !== baseHash) continue;
-    for (const o of b.records ?? []) {
-      try {
-        ledger.apply(o);
-      } catch (e) {
-        console.error(String(e));
-      }
-    }
+    applyBatch(b,shard);
   }
 }
 if (endpoint) {
   for (const b of await batches(shard)) {
     if (b.payload.baseHash !== baseHash)
       throw Error("remote base hash mismatch");
-    for (const o of b.payload.records ?? []) applyObservation(o);
+    applyBatch(b.payload,b.shard??shard);
     cursor = b.payload.cursor ?? cursor;
     remoteCursors[shard] = b.cursor;
   }
@@ -259,10 +264,16 @@ const municipalSeen = new Map<string, string>(), municipalQueue = new Map<string
   municipalProgress = new Map<string, AndamentoRow>(),
   configuredTotalized = new Set<string>();
 const retryAt = new Map<string, number>();
+const municipalRetryAt = new Map<string, number>(), municipalFailures = new Map<string, number>();
 let lastCheckpoint = 0;
 const errors = new Set<string>();
+function withdrawMunicipal(key:string,changed:Observation[]) {
+  const records=municipalSections.get(key)!.map(s=>ledger.records.get(s.id)).filter((r):r is Observation=>!!r);
+  for(const observation of withdrawMunicipalEstimates(records.filter(r=>r.estimated),records.filter(r=>!r.estimated),new Date().toISOString()))
+    if(applyObservation(observation))changed.push(observation);
+}
 async function reconcileMunicipal(changed:Observation[]) {
-  for(const [key,progress] of [...municipalQueue].slice(0,200)) {
+  for(const [key,progress] of [...municipalQueue].filter(([key])=>Date.now()>=(municipalRetryAt.get(key)??0)).slice(0,200)) {
     if(Date.now()>=stopAt) break;
     await renew();
     const [ufCode,municipality]=key.split('/'),uf=ufCode.toLowerCase(),
@@ -276,6 +287,8 @@ async function reconcileMunicipal(changed:Observation[]) {
       if(progressTime?.trim() && sourceVersion<Date.parse(tseTime(progressTime)))
         throw Error('municipal result predates andamento');
       const units=municipalSections.get(key)!,records=units.map(s=>ledger.records.get(s.id)).filter((r):r is Observation=>!!r);
+      if(records.some(r=>r.estimated && Date.parse(r.sourceTime)>sourceVersion))
+        throw Error('municipal result regressed behind previous estimates');
       for(const observation of estimateMunicipalObservations({sections:units,real:records.filter(r=>!r.estimated),previous:records.filter(r=>r.estimated),
         partial:{a:official.a,b:official.b,blank:official.blank,null:official.null,countedSections:official.countedSections,sourceTime},
         totalized:configuredTotalized,order:receiptOrder,identity:IDENTITY,retrievedAt:new Date().toISOString()}))
@@ -285,7 +298,16 @@ async function reconcileMunicipal(changed:Observation[]) {
         || (['a','b','blank','null'] as const).some(k=>real.reduce((sum,r)=>sum+r[k],0)>official[k]))
         throw Error('municipal partial awaits real BU alignment');
       municipalSeen.set(key,progress.signature);municipalQueue.delete(key);errors.delete(`municipal:${key}`);
-    } catch(e) {errors.add(`municipal:${key}`);console.error(`Falha no parcial municipal ${key}: ${String(e)}`);}
+      municipalRetryAt.delete(key);municipalFailures.delete(key);
+    } catch(e) {
+      // Keep only real BUs while the partial is unsafe or unavailable; never retain a stale residual beside a new BU.
+      withdrawMunicipal(key,changed);
+      errors.add(`municipal:${key}`);console.error(`Falha no parcial municipal ${key}: ${String(e)}`);
+      const failures=municipalFailures.get(key)??0;
+      municipalRetryAt.set(key,Date.now()+Math.min(60000,1000*2**Math.min(failures,6)));
+      municipalFailures.set(key,failures+1);
+      municipalQueue.delete(key);municipalQueue.set(key,progress);
+    }
   }
 }
 let scannedAt = 0,
@@ -332,13 +354,7 @@ do {
             );
           for (const b of page.events) {
             if (b.baseHash !== baseHash) continue;
-            for (const o of b.records ?? []) {
-              try {
-                ledger.apply(o);
-              } catch (e) {
-                console.error(String(e));
-              }
-            }
+            applyBatch(b,`g${i}`);
           }
           remoteCursors[key] = page.offset;
           try {
@@ -357,13 +373,7 @@ do {
         for (const b of await batches("all")) {
           if (b.payload.baseHash !== baseHash)
             throw Error("remote base hash mismatch");
-          for (const o of b.payload.records ?? []) {
-            try {
-              ledger.apply(o);
-            } catch (e) {
-              console.error("Quarentena de versão:", String(e));
-            }
-          }
+          applyBatch(b.payload,b.shard);
           remoteCursors.all = b.cursor;
         }
       Object.assign(groupHealth, collectionHealth(groupHealth).groups);
@@ -582,7 +592,9 @@ do {
               if (applyObservation(o)) {
                 changed.push(o);realChanged=true;
                 const key=`${id.slice(0,2).toUpperCase()}/${id.split('/')[1]}`, progress=municipalProgress.get(key);
-                if(progress) municipalQueue.set(key,progress);
+                // Invalidate immediately, even if this municipality is beyond the next 200-entry budget.
+                withdrawMunicipal(key,changed);
+                if(progress) {municipalQueue.set(key,progress);municipalRetryAt.delete(key);}
               }
             }
             if (sourceAdvanced(old, o) && !ledger.quarantined.has(id)) {
@@ -606,8 +618,7 @@ do {
       if(realChanged) await reconcileMunicipal(changed);
       cursor += slice.length;
       if (endpoint && changed.length) {
-        try {for await(const payload of observationBatches({baseHash,records:changed,cursor,queue:pending.size+municipalQueue.size}))
-          await outbox!.stage(payload);
+        try {await outbox!.stageAll(observationBatches({baseHash,records:changed,cursor,queue:pending.size+municipalQueue.size}));
         } catch (e) { throw Error(`ingestion outbox persistence: ${String(e)}`); }
         if (!(await deliverPending())) continue;
       }
@@ -641,6 +652,7 @@ do {
       await store.write({
         baseHash,
         ledger: ledger.checkpoint(),
+        assembly: assembly.checkpoint(),
         sequence,
         cursor,
         remoteCursors,

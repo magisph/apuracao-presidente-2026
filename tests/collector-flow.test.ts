@@ -10,17 +10,19 @@ const exec=promisify(execFile);
 const collector=new URL("../scripts/collect.ts",import.meta.url).href;
 const http=new URL("../src/collector/http.ts",import.meta.url).href;
 const fixture=JSON.parse(await readFile(new URL("./fixtures/ea20-2026-2t-before.json",import.meta.url),"utf8"));
-async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once?:boolean;snapshotFailures?:number;snapshotError?:string;minutes?:string;andamento?:unknown;municipal?:unknown;inventory?:unknown;inventoryFails?:boolean;municipalSequence?:unknown[];bu?:number[]}={}) {
+async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once?:boolean;snapshotFailures?:number;snapshotError?:string;minutes?:string;andamento?:unknown;municipal?:unknown;inventory?:unknown;inventoryFails?:boolean;municipalSequence?:unknown[];municipalByCode?:Record<string,unknown>;batches?:any[];bu?:number[]}={}) {
   const once=o.once??true, failures=o.snapshotFailures??1e9;
   const script=`
     import fs from 'node:fs/promises';
     import {ReliableClient} from ${JSON.stringify(http)};
     process.argv=[process.execPath,'collect.ts',...(${once} ? ['--once'] : [])];
-    let snapshotAttempts=0, municipalReads=0;
+    let snapshotAttempts=0, municipalReads=0; const municipalAttempts={};
     ReliableClient.prototype.official=async function(url) {
       if(url.includes('ele-c.json')) return {pl:[{c:'ele2026',cd:'3221',dt:'25/10/2026',e:[{cd:'6258',t:'2',abr:[{cp:[{cd:'1'}]}]}]}]};
       if(url.includes('-cs.json')) { if(${!!o.inventoryFails}) throw Error('404 inventory unavailable'); return ${JSON.stringify(o.inventory ?? {cdp:'3221',abr:[]})}; }
       if(url.includes('-e006258-ab.json') && ${JSON.stringify(o.andamento ?? null)}) return ${JSON.stringify(o.andamento ?? null)};
+      const code=url.match(/ac([0-9]{5})-c0001-e006258-u.json$/)?.[1], byCode=${JSON.stringify(o.municipalByCode??null)};
+      if(code && byCode) {municipalAttempts[code]=(municipalAttempts[code]??0)+1;if(!byCode[code])throw Error('404 municipal unavailable');return byCode[code];}
       if(url.includes('01066-c0001-e006258-u.json') &&${JSON.stringify(o.municipal ?? null)}) { const sequence=${JSON.stringify(o.municipalSequence ?? [])}; return sequence.length ? sequence[Math.min(municipalReads++,sequence.length-1)] : ${JSON.stringify(o.municipal ?? null)}; }
       if(url.endsWith('-aux.json') && ${!!o.bu}) return {dg:'25/10/2026',hg:'17:39:00',st:'Totalizada',hashes:[{st:'Totalizado',hash:'abcd',dr:'25/10/2026',hr:'17:39:00',arq:[{tp:'bu',nm:'test-bu.dat'}]}]};
       return ${JSON.stringify(fixture)};
@@ -29,7 +31,8 @@ async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once
     globalThis.fetch=async function(url,init) {
       url=String(url); const body=init?.body ? JSON.parse(init.body) : {};
       if(url.endsWith('/ingest/lease')) return Response.json({shard:body.shard,owner:body.owner,epoch:1,expires:Date.now()+120000});
-      if(url.includes('/ingest/batches')) return Response.json([]);
+      if(url.includes('/ingest/batches')) { const query=new URL(url).searchParams;
+        return Response.json((${JSON.stringify(o.batches??[])}).filter(b=>b.cursor>Number(query.get('after')??0) && (query.get('shard')==='all'||query.get('shard')===b.shard)).slice(0,Number(query.get('limit')??100))); }
       if(url.endsWith('/ingest/health')) return Response.json(Array.from({length:5},(_,i)=>({shard:'g'+i,checkedAt:new Date().toISOString(),collectionState:'stale',queue:1})));
       if(url.endsWith('/ingest/sequence')) return Response.json({sequence:0});
       if(url.endsWith('/api/latest')) return new Response('{}',{status:503});
@@ -48,8 +51,10 @@ async function run(dir:string,shard:string,fail=false,snapshotStatus=201,o:{once
       throw Error('unexpected URL '+url);
     };
     await import(${JSON.stringify(collector)});
+    await fs.writeFile('municipal-reads.json',JSON.stringify(municipalAttempts));
   `;
-  await exec(process.execPath,["--experimental-strip-types","--input-type=module","-e",script],{
+  await writeFile(join(dir,'collector-fixture.mjs'),script);
+  await exec(process.execPath,["--experimental-strip-types",join(dir,'collector-fixture.mjs')],{
     cwd:dir,env:{...process.env,COLLECTOR_SHARD:shard,INGEST_URL:"https://fixture.test",INGEST_TOKEN:"test-only-secret-12345678901234567890",...(o.minutes ? {COLLECTOR_MINUTES:o.minutes,PUBLISH_INTERVAL_MS:"1000"} : {})},timeout:once ? 20000 : 60000,windowsHide:true,
   });
 }
@@ -88,6 +93,89 @@ async function checkpointRecords(dir:string) {
   assert.ok(file,'collector must persist its completed municipal cycle');
   return JSON.parse(await readFile(join(dir,'data',file),'utf8')).ledger.records as any[];
 }
+
+const realBuFixture=()=>{
+  const tlv=(tag:number,...parts:number[][])=>{const b=parts.flat();return [tag,...(b.length<128?[b.length]:[0x81,b.length]),...b];};
+  const int=(n:number)=>tlv(2,n>127?[0,n]:[n]);
+  const vote=(n:number,q:number)=>tlv(0x30,tlv(0x81,[1]),tlv(0x82,[q]),tlv(0xa3,int(n)));
+  const office=tlv(0x30,tlv(0x81,[1]),int(1),tlv(0x30,vote(13,120),vote(22,100)));
+  return tlv(0x30,tlv(4,tlv(0x30,tlv(2,[0x18,0x72]),tlv(2,[1,44]),int(1),office,tlv(4,Array(110).fill(0)))));
+};
+const thirdSectionInventory={cdp:'3221',abr:[{cd:'ac',mu:[{cd:'01066',nm:'Test',zon:[{cd:'0001',sec:[{ns:'0003',da:'25/10/2026',ha:'17:39:00'}]}]}]}]};
+
+for (const mismatch of ['count','time','regression'] as const) {
+  test(`new real BU withdraws old estimates while municipal ${mismatch} remains pending`,async()=>{
+    const dir=await mkdtemp(join(tmpdir(),'vertice-unsafe-estimates-'));
+    try {
+      await municipalBase(dir);
+      await run(dir,'g0',false,201,{andamento:progressFixture(2),municipal:municipalFixture(2,220,200)});
+      const official=mismatch==='count'?municipalFixture(1):{...municipalFixture(2,220,200),hg:'17:30:00'};
+      const progress=progressFixture(2);
+      if(mismatch==='regression')progress.abr[0].ht='17:20:00';
+      await run(dir,'g0',false,201,{andamento:progress,municipal:official,inventory:thirdSectionInventory,bu:realBuFixture()});
+      const rows=(await checkpointRecords(dir)).filter(r=>r.status==='totalized');
+      assert.equal(rows.length,1);
+      assert.equal(rows[0].estimated,undefined);
+      assert.deepEqual([rows[0].a,rows[0].b],[120,100]);
+      const health=JSON.parse(await readFile(join(dir,'data/health-g0.json'),'utf8'));
+      assert.equal(health.state,'stale'); assert.ok(health.queue>0);
+    } finally {await rm(dir,{recursive:true,force:true});}
+  });
+}
+
+test('insufficient municipal capacity stays pending without publishing truncated estimates',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'vertice-capacity-pending-'));
+  try {await municipalBase(dir,1);await run(dir,'g0',false,201,{andamento:progressFixture(1),municipal:municipalFixture(1,220,120)});
+    assert.equal((await checkpointRecords(dir)).filter(r=>r.status==='totalized').length,0);
+    const health=JSON.parse(await readFile(join(dir,'data/health-g0.json'),'utf8'));
+    assert.equal(health.state,'stale');assert.ok(health.queue>0);
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
+
+test('municipal failures in the first 200 entries cannot starve a later valid municipality',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'vertice-fair-municipal-'));
+  try {
+    await municipalBase(dir,201);
+    const path=join(dir,'data/base.json'),base=JSON.parse(await readFile(path,'utf8'));
+    base.sections.forEach((s:any,i:number)=>{s.municipality=String(10000+i);s.id=`ac/${s.municipality}/0001/0001`;s.members=[s.id];});
+    await writeFile(path,JSON.stringify(base));
+    const andamento=progressFixture(1);
+    andamento.abr=base.sections.map((s:any)=>({...progressFixture(1).abr[0],cdabr:s.municipality}));
+    const municipalByCode=Object.fromEntries(base.sections.map((s:any,i:number)=>[s.municipality,i===200?municipalFixture(1):null]));
+    await run(dir,'g0',false,201,{once:false,minutes:'0.05',andamento,municipalByCode});
+    const attempts=(await readFile(join(dir,'attempts.ndjson'),'utf8')).trim().split('\n').map(x=>JSON.parse(x));
+    const {gunzipText}=await import('../src/core/codec.ts');
+    const rows=(await Promise.all(attempts.map(async x=>JSON.parse(await gunzipText(x.payload.data)).records))).flat().filter(r=>r.status==='totalized');
+    assert.deepEqual(rows.map(r=>[r.id,r.a,r.b]),[['ac/10200/0001/0001',120,90]]);
+    const reads=JSON.parse(await readFile(join(dir,'municipal-reads.json'),'utf8'));
+    assert.ok(reads['10000']<=4,`failed municipality was retried ${reads['10000']} times in 3 seconds`);
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
+
+test('new real BU removes unsafe estimates even when its municipality is beyond this cycle queue budget',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'vertice-bu-queue-budget-'));
+  try {
+    await municipalBase(dir,603);
+    const path=join(dir,'data/base.json'),base=JSON.parse(await readFile(path,'utf8'));
+    base.sections.forEach((s:any,i:number)=>{s.municipality=String(10000+Math.min(i,600));
+      s.id=`ac/${s.municipality}/0001/${String(i<600?1:i-599).padStart(4,'0')}`;s.members=[s.id];});
+    const raw=JSON.stringify(base),baseHash=createHash('sha256').update(raw).digest('hex');
+    await writeFile(path,raw);
+    const {estimateMunicipalObservations}=await import('../src/collector/municipal.ts');
+    const {IDENTITY}=await import('../src/core/demo.ts');
+    const estimates=estimateMunicipalObservations({sections:base.sections.slice(600),partial:{a:220,b:200,blank:0,null:0,
+      countedSections:2,sourceTime:'2026-10-25T20:40:05Z'},real:[],previous:[],order:new Map(),identity:IDENTITY,retrievedAt:'2026-10-25T20:41:00Z'});
+    await writeFile(join(dir,`data/checkpoint-g0-${baseHash.slice(0,12)}.json`),JSON.stringify({baseHash,
+      ledger:{records:estimates,quarantined:[]},sequence:0,cursor:0}));
+    const codes=Array.from({length:601},(_,i)=>String(10000+i)),andamento=progressFixture(1);
+    andamento.abr=codes.map(code=>({...progressFixture(code==='10600'?2:1).abr[0],cdabr:code}));
+    const municipalByCode=Object.fromEntries(codes.map(code=>[code,municipalFixture(code==='10600'?2:1)]));
+    const inventory={cdp:'3221',abr:[{cd:'ac',mu:[{...thirdSectionInventory.abr[0].mu[0],cd:'10600'}]}]};
+    await run(dir,'g0',false,201,{andamento,municipalByCode,inventory,bu:realBuFixture()});
+    const rows=(await checkpointRecords(dir)).filter(r=>r.status==='totalized'&&r.id.includes('/10600/'));
+    assert.equal(rows.length,1);assert.equal(rows[0].estimated,undefined);assert.equal(rows[0].a,120);
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
 test('municipal fallback works when the section inventory is unavailable',async()=>{
   const dir=await mkdtemp(join(tmpdir(),'vertice-no-inventory-'));
   try {await municipalBase(dir); await run(dir,'g0',false,201,{andamento:progressFixture(1),municipal:municipalFixture(1),inventoryFails:true});
@@ -139,6 +227,54 @@ test('large municipal update is split into transport-sized durable batches',asyn
     const {gunzipText}=await import('../src/core/codec.ts');let count=0;
     for(const attempt of attempts){assert.ok(Buffer.byteLength(JSON.stringify(attempt))<89000);count+=JSON.parse(await gunzipText(attempt.payload.data)).records.length;}
     assert.equal(count,5000);
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
+
+test('coordinator preserves previous municipal totals until every reconciliation fragment survives restart',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'vertice-atomic-municipal-'));
+  try {
+    await municipalBase(dir,2000);
+    const {sections}=JSON.parse(await readFile(join(dir,'data/base.json'),'utf8'));
+    const baseHash=createHash('sha256').update(await readFile(join(dir,'data/base.json'))).digest('hex');
+    const {estimateMunicipalObservations}=await import('../src/collector/municipal.ts');
+    const {observationBatches}=await import('../src/collector/outbox.ts');
+    const {IDENTITY}=await import('../src/core/demo.ts');
+    const options={sections,partial:{a:120000,b:90000,blank:0,null:0,countedSections:1000,sourceTime:'2026-10-25T20:40:00Z'},
+      real:[],previous:[],order:new Map<string,number>(),identity:IDENTITY,retrievedAt:'2026-10-25T20:40:00Z'};
+    const initial=estimateMunicipalObservations(options);
+    const next=estimateMunicipalObservations({...options,previous:initial,partial:{...options.partial,sourceTime:'2026-10-25T20:50:00Z'},
+      totalized:new Set<string>(sections.slice(1000).map((s:any)=>s.id))});
+    const fragments=[];for await(const p of observationBatches({baseHash,records:next,cursor:2,queue:0}))fragments.push(p);
+    assert.equal(fragments.length,2);
+    const batches=[{shard:'g0',cursor:1,payload:{baseHash,records:initial,cursor:1,queue:0}},
+      {shard:'g0',cursor:2,payload:fragments[0]}];
+    await run(dir,'coordinator',false,201,{batches});
+    const readActive=async()=>{
+      const {readdir}=await import('node:fs/promises');
+      const p=(await readdir(join(dir,'data'))).find(f=>f.startsWith('checkpoint-coordinator-'))!;
+      return JSON.parse(await readFile(join(dir,'data',p),'utf8')).ledger.records.filter((r:any)=>r.status==='totalized');
+    };
+    const first=await readActive();
+    assert.equal(first.length,1000);assert.equal(first.reduce((n:number,r:any)=>n+r.a,0),120000);
+    const firstSnapshot=JSON.parse(await readFile(join(dir,'published.json'),'utf8'));
+    assert.equal(firstSnapshot.territories.find((t:any)=>t.code==='AC').projection.observedA,120000);
+    // Resume from the saved cursor, so the first fragment is not delivered again.
+    batches.push({shard:'g0',cursor:3,payload:fragments[1]});
+    await run(dir,'coordinator',false,201,{batches});
+    const completed=await readActive();
+    assert.equal(completed.length,1000);assert.equal(completed.reduce((n:number,r:any)=>n+r.a,0),120000);
+    assert.ok(completed.every((r:any)=>Number(r.id.split('/').at(-1))>1000));
+    // A group also recovers the complete local ledger after its first acknowledgement was lost.
+    const outboxPath=join(dir,`data/outbox-g0-${baseHash.slice(0,12)}.json`);
+    await writeFile(outboxPath,JSON.stringify({baseHash,batches:fragments.map((payload,i)=>({id:`fragment-${i}`,payload}))}));
+    await run(dir,'g0',true,201,{batches:batches.slice(0,2)});
+    await run(dir,'g0',false,201,{batches:batches.slice(0,2)});
+    const recovered=(await checkpointRecords(dir)).filter(r=>r.status==='totalized');
+    assert.equal(recovered.length,1000);assert.equal(recovered.reduce((n,r)=>n+r.a,0),120000);
+    assert.ok(recovered.every(r=>Number(r.id.split('/').at(-1))>1000));
+    assert.equal(JSON.parse(await readFile(outboxPath,'utf8')).batches.length,0);
+    const attempts=(await readFile(join(dir,'attempts.ndjson'),'utf8')).trim().split('\n').map(x=>JSON.parse(x));
+    assert.deepEqual(attempts[0],attempts[1]);
   } finally {await rm(dir,{recursive:true,force:true});}
 });
 test("actual coordinator publishes declared source failures despite recent heartbeats",async()=>{
