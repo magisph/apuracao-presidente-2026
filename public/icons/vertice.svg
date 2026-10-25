@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Vértice</title>
+  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
+  <path d="M135 386H185L220 256H170Z M213 386H263L317 186H267Z" fill="#eeeeee"/>
+  <path d="M291 386H341L411 126H361Z" fill="#60a5fa"/>
+</svg>
