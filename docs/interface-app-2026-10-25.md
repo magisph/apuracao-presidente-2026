@@ -27,3 +27,11 @@ O conector Firecrawl não suportou Flickr e não conseguiu recuperar o site de m
 - Revisão independente da interface: nenhum crítico; um achado de sobreposição do rodapé em janela estreita foi corrigido. Chrome a 800px reproduziu a sobreposição de 10px antes e confirmou separação de 4px depois. Viewport de teste restaurado; build refeito e aprovado. Não houve mudança no motor eleitoral.
 
 Dry-run do Cloudflare aprovado (`data/pwa-dry-run.log`), nos mesmos Worker/D1 e sem mudança de bindings. Publicação e conferência externa serão registradas após o envio dos assets. Os coletores em execução não precisam ser reiniciados para esta mudança visual.
+
+## Publicação confirmada
+
+Código `4814e608ddc48685bcf79232e4bfb4d23043da0f` integrado em `main` e enviado. CI `40216140852` aprovado: 118 testes, build e auditoria sem vulnerabilidades. Worker publicado na versão `53c65e55-e8f7-4a94-bf42-dd32408a0b40`; versão anterior para rollback `d06d6592-1c84-446b-961d-a00c62f205a6`.
+
+Conferência externa em `2026-10-25T17:24:12.662Z`: HTML, JavaScript, manifesto, ícones SVG/PNG e ambas as fotos responderam 200 e seus SHA-256 conferem com o build local. Modelo mantém o hash `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`; estado `ok`. A fila observada de 291 itens é da coleta em andamento, que não foi reiniciada por esta publicação visual.
+
+Chrome no endereço público: `Page.getInstallabilityErrors=[]`, manifesto válido com dois ícones e modo standalone, botão “Instalar app” visível, fotos carregadas e frase removida. O painel publicado foi mantido em uma aba do Chrome; a instalação efetiva no Windows fica para a ação do usuário. O servidor e a aba de pesquisa temporários foram encerrados. Evidência em `docs/evidencias/interface-app-producao.json` e logs locais `data/pwa-production-verified.log`.

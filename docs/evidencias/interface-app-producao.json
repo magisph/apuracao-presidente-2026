@@ -1,0 +1,92 @@
+{
+  "kind": "verified-interface-publication",
+  "codeCommit": "4814e608ddc48685bcf79232e4bfb4d23043da0f",
+  "ciRun": 40216140852,
+  "testsPassed": 118,
+  "testsFailed": 0,
+  "buildPassed": true,
+  "auditVulnerabilities": 0,
+  "workerVersion": "53c65e55-e8f7-4a94-bf42-dd32408a0b40",
+  "previousWorkerVersion": "d06d6592-1c84-446b-961d-a00c62f205a6",
+  "chrome": {
+    "installButtonVisible": true,
+    "taglineRemoved": true,
+    "manifestErrors": [],
+    "portraitsLoaded": true,
+    "installabilityErrors": [],
+    "windowsInstallationPerformed": false
+  },
+  "production": {
+    "checkedAt": "2026-10-25T17:24:12.662Z",
+    "codeCommit": "4814e608ddc48685bcf79232e4bfb4d23043da0f",
+    "assets": [
+      {
+        "path": "/assets/index-XqxyFFKk.js",
+        "bytes": 38569,
+        "sha256": "c1b87f5d49bb18c16ed085c638bca4374ffe6b66ccf39a015beb054b792b1726"
+      },
+      {
+        "path": "/manifest.webmanifest",
+        "bytes": 605,
+        "sha256": "69ad52ce24025e91667a9de5e4573487d9fbcee40e40ecbc6a62c06c9797fe93"
+      },
+      {
+        "path": "/icons/vertice.svg",
+        "bytes": 290,
+        "sha256": "7fb282ad8f062ff1d6710d7ee637139be81fb5eb85cc33c824fd2235d8b3cdfb"
+      },
+      {
+        "path": "/icons/vertice-192.png",
+        "bytes": 1983,
+        "sha256": "96b3b80d94b8ec38c21436e22891e5a497e2d01abbde5c33b4160e94a514fe14"
+      },
+      {
+        "path": "/icons/vertice-512.png",
+        "bytes": 6883,
+        "sha256": "690f1c2b970fba86a883bd8bf974be21a7ebc9dc226d572705d36894b76b52c1"
+      },
+      {
+        "path": "/photos/lula.jpg",
+        "bytes": 33736,
+        "sha256": "c1a6b78fdc20ea9c7613f518acfdf5d8febaf868513842e47e202bea01f64056"
+      },
+      {
+        "path": "/photos/flavio.webp",
+        "bytes": 218570,
+        "sha256": "7d50001faee9b4eab300987abe7a246396b7738d7906ddd495af006d6de7daf4"
+      }
+    ],
+    "manifestDisplay": "standalone",
+    "modelHash": "f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd",
+    "healthState": "ok",
+    "queue": 291,
+    "groups": {
+      "g1": {
+        "checkedAt": "2026-10-25T17:23:06.01Z",
+        "queue": 291,
+        "state": "ok"
+      },
+      "g4": {
+        "checkedAt": "2026-10-25T17:23:57.588Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g2": {
+        "checkedAt": "2026-10-25T17:23:37.696Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g0": {
+        "checkedAt": "2026-10-25T17:23:58.232Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g3": {
+        "checkedAt": "2026-10-25T17:23:09.77Z",
+        "queue": 0,
+        "state": "ok"
+      }
+    },
+    "serviceWorkerIntroduced": false
+  }
+}
