@@ -87,7 +87,7 @@ app.innerHTML = `<header class="topbar"><div class="top-left"><div class="brand"
 <section class="panel replay" aria-label="Reprodução do histórico"><button id="play" aria-label="Reproduzir histórico">▶</button><div class="replay-title">Linha do tempo<small id="replay-label">Acompanhamento atual</small></div><input id="replay" type="range" min="0" max="0" value="0" aria-label="Instante do histórico"><span class="replay-time" id="replay-time">—</span><button id="return-live">Voltar ao vivo</button></section><div class="bottom-grid" id="metrics"></div></div><section id="details" class="panel details hidden"></section><footer class="footer"><span>VÉRTICE / ELEIÇÕES 2026 · Fonte oficial: Tribunal Superior Eleitoral · Horários de Brasília</span><span>Projeção experimental independente · Sem vínculo com o TSE</span><span class="photo-credits">Fotos com enquadramento circular: <a href="https://www.flickr.com/photos/lulaoficial/55450293419/in/album-72177720335035217" target="_blank" rel="noopener noreferrer">Lula — Ricardo Stuckert / Lula Oficial</a> (<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>); Flávio Bolsonaro — <a href="https://www.flaviobolsonaro.com.br/materiais" target="_blank" rel="noopener noreferrer">arquivo oficial fornecido</a>.</span></footer></main>`;
 const $ = (id: string) => document.getElementById(id)!;
 enableAppInstall($("install-app") as HTMLButtonElement,$("install-status"));
-enablePresentation($("presentation") as HTMLButtonElement,()=>{tab="overview";render();window.scrollTo(0,0);});
+enablePresentation($("presentation") as HTMLButtonElement,(active)=>{if(active)tab="overview";render();if(active)window.scrollTo(0,0);});
 $("score").addEventListener('error',(event)=>{
   if(event.target instanceof HTMLImageElement)event.target.hidden=true;
 },true);
@@ -258,10 +258,10 @@ function renderGraph(s: Snapshot) {
       '<div class="chart-empty">Aguardando votos.<br>O gráfico aparecerá quando houver dados.</div>';
     return;
   }
-  const width = 320,
+  const width = document.documentElement.classList.contains('presentation') ? 660 : 320,
     height = 250,
     left = 37,
-    right = 303,
+    right = width-17,
     top = 16,
     bottom = 214,
     ys = series

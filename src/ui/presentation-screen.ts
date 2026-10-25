@@ -1,9 +1,11 @@
-export function enablePresentation(button:HTMLButtonElement,onEnter:()=>void,context:Document=document,root:HTMLElement=document.documentElement) {
+export function enablePresentation(button:HTMLButtonElement,onLayout:(active:boolean)=>void,context:Document=document,root:HTMLElement=document.documentElement) {
   let active=false,enteredFullscreen=false;
   const update=(value:boolean)=>{
+    const changed=active!==value;
     active=value;root.classList.toggle('presentation',value);
     button.textContent=value?'Sair do Telão':'Modo Telão';
     button.setAttribute('aria-pressed',String(value));
+    if(changed)onLayout(value);
   };
   const exit=()=>{
     update(false);enteredFullscreen=false;
@@ -13,7 +15,7 @@ export function enablePresentation(button:HTMLButtonElement,onEnter:()=>void,con
   update(false);
   button.addEventListener('click',()=>{
     if(active){exit();return;}
-    update(true);onEnter();
+    update(true);
     // The enlarged layout remains usable when fullscreen is unsupported or refused.
     if(root.requestFullscreen)void root.requestFullscreen().then(()=>{
       if(!active&&context.fullscreenElement===root)void context.exitFullscreen().catch(()=>{});

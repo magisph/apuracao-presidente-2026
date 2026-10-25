@@ -987,6 +987,8 @@ body {
 .presentation .map { height: clamp(200px, calc(100dvh - 840px), 700px); }
 .presentation .chart-empty { min-height: clamp(200px, calc(100dvh - 840px), 700px); font-size: clamp(16px, 1.2vw, 25px); }
 .presentation .map-wrap { flex: 1; min-height: 240px; }
+.presentation .map { position: absolute; inset: 0; height: 100%; }
+.presentation .chart text { font-size: 12px; }
 .presentation .map-tag { font-size: clamp(11px, .8vw, 16px); }
 .presentation .chart-summary { margin-top: auto; padding: 12px 17px; }
 .presentation .stat-title,
@@ -1023,5 +1025,6 @@ body {
   .presentation .map { height: clamp(160px, calc(100dvh - 530px), 300px); }
   .presentation .chart-empty { min-height: clamp(160px, calc(100dvh - 530px), 300px); }
   .presentation .map-wrap { min-height: 160px; }
+  .presentation .map { height: 100%; }
   .presentation .footer { font-size: 9px; line-height: 1.5; padding-top: 8px; }
 }
