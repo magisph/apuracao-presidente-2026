@@ -345,3 +345,11 @@ Estado atual consolidado em `docs/revisao-municipal-2026-10-24.md`. O branch loc
 - Nenhum dado de teste enviado à produção, nenhum banco apagado e nenhum plano pago contratado. A carga municipal real de 25/10 permanece futura; o orçamento anterior não é homologação desse volume.
 
 Congelamento pedido para 25/10 às 12h de Brasília. Lembrete do realinhamento de run em 25/10 às 15h15 foi criado. Após confirmação: merge/push, CI, API/assets compatíveis antes dos novos coletores e conferência da primeira publicação pelo hash de modelo `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`. Até lá, mudanças apenas locais.
+
+## 21. Revisão integral, correções e publicação confirmada — 24/10, 23h04
+
+Após nova revisão independente de `d6eaf57..8e3ee82`, os seis achados importantes adicionais receberam correções com regressões RED→GREEN. Código publicado em `455bcaa`: exclusão de IDs ocupados por qualquer BU real; conservação exata sem truncar votos; retirada imediata de estimativas inseguras com fonte atrasada e fila cheia; retentativas justas; aplicação completa de reconciliações fragmentadas, com recuperação durável; política de 1% também na comparação histórica. **115 testes**, build/TypeScript e auditoria aprovados no CI Linux `40152712705`.
+
+O usuário autorizou merge/push/deploy. Worker `d06d6592-1c84-446b-961d-a00c62f205a6` publicado em 100% do tráfego; run anterior encerrado, continuação `40152941861` na revisão nova e seis leases confirmados. Primeiro snapshot real `live-14` com o hash do modelo calibrado, base correta, fila zero e cinco grupos saudáveis. Assets conferidos por SHA-256; navegador público validou diagnóstico, municípios do Acre e comparação histórica. Nenhum dado sintético ou migração na produção.
+
+Ensaio local adicional de transporte: 499.248 observações sintéticas, 488 fragmentos, confirmação perdida recuperada, aplicação única e íntegra em 31,84 s. Esse ensaio não mede pico real, cotas de nuvem ou precisão futura. A faixa 0,03/0,035 segue provisória, sem vencedor/probabilidade estatística; a fonte oficial ainda retorna zero votos de pré-apuração. Registro completo em `docs/publicacao-municipal-2026-10-24.md` e `docs/evidencias/publicacao-municipal-producao.json`. As seções anteriores preservam o histórico; a publicação deixou de ser pendência.

@@ -46,3 +46,9 @@ Todos os processos locais de geração terminaram. Nenhuma modificação foi env
 A revisão integral de `d6eaf57..8e3ee82` encontrou seis achados importantes adicionais. A pedido do usuário, todos receberam correções locais e regressões RED→GREEN. Estado mais recente em `docs/correcoes-seis-achados-2026-10-24.md`: **115 testes aprovados, zero falhas; build/TypeScript aprovados**. Rajada sintética de 499.248 observações passou pelo transporte durável com confirmação perdida e retomada, sem aplicar fragmentos incompletos (31,84 s locais).
 
 Não repetir geração da ordem ou calibração: modelo e artefatos permanecem intactos. HEAD continua `8e3ee82`; as correções ainda não foram commitadas nem publicadas. Antes de qualquer ação de produção, obter confirmação expressa e garantir que o coordenador com montagem atômica esteja ativo antes de consumir fragmentos dos produtores municipais novos. O ensaio local não comprova cotas de nuvem nem disponibilidade futura das fontes.
+
+## Publicação confirmada — 24/10, 23h04 de Brasília
+
+O usuário autorizou e o código corrigido `455bcaa` foi integrado e publicado. CI Linux aprovado (115 testes/build/auditoria), Worker `d06d6592-1c84-446b-961d-a00c62f205a6` em 100% do tráfego e run `40152941861` com coordenador/cinco grupos na revisão nova. Primeiro snapshot real `live-14`, hash do modelo `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`, estado `ok` e fila zero. Os seis leases apontam para o run novo; produção permanece em pré-apuração oficial, com zero votos. Evidências e rollback em `docs/publicacao-municipal-2026-10-24.md`.
+
+As notas anteriores são histórico da execução. Não repetir geração, calibração ou publicação sem necessidade. Manter o lembrete de realinhamento de 25/10 às 15h15; código de produção e documentação final devem ser distinguidos pelo SHA registrado no relatório de publicação.

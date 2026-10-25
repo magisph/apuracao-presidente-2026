@@ -11,7 +11,7 @@ Plano autorizado: geração e commit local da ordem 1T; varredura dos quatro par
 - [x] Selecionar choques a partir da varredura concluída: 0,03/0,035; resultado provisório de 2022, sem selo estatístico, em `config/calibracao-faixa-2022.json`.
 - [x] Corrigir os seis grupos importantes da revisão independente com RED→GREEN.
 - [x] Suíte/build: 98/98 e build aprovados após as correções do gerador e o ajuste de eficiência dos lotes. Diff sem erros de whitespace; dry-run do deploy concluído sem alteração externa.
-- [ ] Solicitar confirmação para merge/push. Somente depois: CI e primeira publicação produtiva.
+- [x] Confirmação expressa recebida; merge/push, CI e primeira publicação produtiva concluídos, conforme registro posterior.
 
 Revisão independente concluída, somente leitura e sem Astra; sem segunda revisão após as correções verificadas por TDD. Nenhum voto de teste enviado à produção; nenhum banco apagado. Modelo pontual preservado; somente os dois choques padrão de incerteza foram alterados em `model.ts` nesta retomada.
 
@@ -52,3 +52,9 @@ Suíte final: **98 testes aprovados, zero falhas**. Build/TypeScript aprovados. 
 O usuário pediu uma nova revisão antes de produção; ela identificou seis achados importantes adicionais. A rodada de correções autorizada está concluída localmente, sem commit, merge, push ou deploy. **115/115 testes e build/TypeScript aprovados**; regressões cobrem alocação em IDs com BU real, conservação sem truncamento, retirada imediata com fonte incompatível e fila cheia, justiça das retentativas, reconciliação completa entre fragmentos/reinícios e comparação histórica abaixo de 1%.
 
 Ensaio sintético de pico: 499.248 observações, 488 fragmentos, confirmação perdida recuperada, aplicação única e íntegra em 31,84 s neste PC. Isso não comprova latência do TSE ou cotas do Cloudflare. Evidências e decisões em `docs/correcoes-seis-achados-2026-10-24.md`; o relatório anterior de 98 testes é histórico. Modelo, ordem 1T e calibração preservados. Ativação depende de confirmação expressa e de coordenador/grupos com a revisão corrigida.
+
+## Publicação concluída após autorização
+
+Código `455bcaa` integrado em `main` e enviado; CI `40152712705` aprovado com 115 testes, build e auditoria. Worker publicado na versão `d06d6592-1c84-446b-961d-a00c62f205a6`. O run antigo terminou e a continuação iniciou `40152941861` na revisão nova; os seis leases foram conferidos no D1 por consulta somente leitura.
+
+Primeiro snapshot real verificado: `live-14`, modelo `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`, fila zero, cinco grupos saudáveis e base correta. Interface/assets e leitura municipal também conferidas. Registro completo em `docs/publicacao-municipal-2026-10-24.md` e evidência em `docs/evidencias/publicacao-municipal-producao.json`. Nenhuma migração ou fixture produtiva. Alterações locais preexistentes preservadas.

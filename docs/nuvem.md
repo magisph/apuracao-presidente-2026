@@ -54,3 +54,13 @@ Consultar o workflow Coleta eleitoral para estado dos jobs. Para iniciar outra j
 Nova versão: `npm ci --ignore-scripts`, `npm test`, `npm run build`, `npx wrangler@4.152.0 deploy --config worker/wrangler.toml --dry-run`, revisão do alvo e então o mesmo comando sem `--dry-run`. CLI deve estar autenticada na conta configurada. Nunca colocar credenciais no frontend ou no TOML.
 
 Fontes: [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/), [limites Workers](https://developers.cloudflare.com/workers/platform/limits/), [limites D1](https://developers.cloudflare.com/d1/platform/limits/), [encadeamento com GITHUB_TOKEN](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+
+## Atualização publicada — 24/10 às 23h04 de Brasília
+
+Modo municipal e seis correções da revisão integral publicados após autorização: código `455bcaa69c42bbdeb2bcacbe0ccf38715f0b88a0`, CI `40152712705` aprovado com **115 testes**, build e auditoria. Worker na versão `d06d6592-1c84-446b-961d-a00c62f205a6`; base/D1/segredos preservados, sem migração ou dados sintéticos.
+
+O run antigo `40133213187` terminou e a continuação criou `40152941861` na revisão corrigida. Coordenador e cinco grupos possuem leases do run novo. Snapshot real `live-14` e `/api/health` conferidos: modelo `f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd`, estado `ok`, fila zero, cinco grupos saudáveis. Assets remotos conferem com o build; navegação municipal e comparação histórica foram verificadas no navegador público.
+
+O transporte novo monta atualizações completas antes de aplicar BUs/estimativas/retiradas e persiste fragmentos pendentes junto aos cursores. Não operar um coordenador antigo com produtores municipais novos. Os choques 0,03/0,035 são provisórios; vencedor/probabilidade estatística continuam indisponíveis. Detalhes, evidências e versão anterior para rollback em `docs/publicacao-municipal-2026-10-24.md`. O lembrete de realinhamento às 15h15 de 25/10 e o prazo final existente foram preservados.
+
+Os horários de troca natural citados anteriormente correspondiam aos runs anteriores. Após este reinício, conferir a execução vigente no realinhamento de 15h15; a duração de cada ciclo continua em 345 min, com possíveis filas e retomada de leases.

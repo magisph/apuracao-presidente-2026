@@ -1,0 +1,99 @@
+{
+  "kind": "verified-production-release",
+  "workerVersion": "d06d6592-1c84-446b-961d-a00c62f205a6",
+  "deploymentId": "cb63ee67-c1d9-4923-a3e8-510bc151dde7",
+  "previousWorkerVersion": "8d7a7095-bb74-409f-aeeb-35bb211d9a4a",
+  "codeCommit": "455bcaa69c42bbdeb2bcacbe0ccf38715f0b88a0",
+  "validationRun": 40152712705,
+  "validationConclusion": "success",
+  "activeCollectionRun": 40152941861,
+  "oldCollectionRun": 40133213187,
+  "oldRunConclusion": "cancelled",
+  "leaseVerification": {
+    "checkedAt": "2026-10-25T02:05:03.696Z",
+    "runId": 40152941861,
+    "allSixLeasesOnNewRun": true,
+    "leases": [
+      {
+        "shard": "coordinator",
+        "epoch": 8,
+        "expires": 1792893998613
+      },
+      {
+        "shard": "g0",
+        "epoch": 7,
+        "expires": 1792894018062
+      },
+      {
+        "shard": "g1",
+        "epoch": 7,
+        "expires": 1792894021842
+      },
+      {
+        "shard": "g2",
+        "epoch": 7,
+        "expires": 1792894020976
+      },
+      {
+        "shard": "g3",
+        "epoch": 7,
+        "expires": 1792893999291
+      },
+      {
+        "shard": "g4",
+        "epoch": 7,
+        "expires": 1792894001887
+      }
+    ],
+    "rowsWritten": 0
+  },
+  "snapshotVerification": {
+    "checkedAt": "2026-10-25T02:04:33.004Z",
+    "release": "455bcaa69c42bbdeb2bcacbe0ccf38715f0b88a0",
+    "snapshot": "live-14",
+    "sequence": 14,
+    "createdAt": "2026-10-25T02:03:54.478Z",
+    "modelHash": "f1835080b0161880fda5245692f356b711a7cdb35ed68da5c7a28a0cb6b41cbd",
+    "baseHash": "2d2f46c70fff94782d60e8ee6b66e39b83b457ade6010414c345e9a2b15d61ff",
+    "state": "ok",
+    "queue": 0,
+    "groups": {
+      "g1": {
+        "checkedAt": "2026-10-25T02:04:19.272Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g4": {
+        "checkedAt": "2026-10-25T02:04:01.188Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g2": {
+        "checkedAt": "2026-10-25T02:04:19.778Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g0": {
+        "checkedAt": "2026-10-25T02:04:14.166Z",
+        "queue": 0,
+        "state": "ok"
+      },
+      "g3": {
+        "checkedAt": "2026-10-25T02:03:59.564Z",
+        "queue": 0,
+        "state": "ok"
+      }
+    },
+    "officialValid": 0,
+    "modeledUnits": 499206,
+    "estimatedSections": 0,
+    "asset": "/assets/index-D-qOyIEk.js",
+    "assetSha256": "b43f547e9bb8e4646847ef384fd1195cfcb421e268374fe9ba1bc3cd0223a17a",
+    "ufCount": 28,
+    "acreMunicipalities": 22,
+    "statisticalWinner": null,
+    "independentCalibration": false
+  },
+  "syntheticDataSent": false,
+  "schemaMigrationApplied": false
+}
